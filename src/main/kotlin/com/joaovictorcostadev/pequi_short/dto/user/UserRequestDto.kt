@@ -4,14 +4,15 @@ data class UserRequestDto(
     val name:String,
     val email: String,
     val password: String,
-    val groupId: Int,
+    val groupId: Long,
 
 )
 
 data class UserResponseDto(
     val name: String,
     val email: String,
-    val groupId: Int
+    val groupId: Long,
+    val groupName: String
 )
 
 data class UserAuthDto(
