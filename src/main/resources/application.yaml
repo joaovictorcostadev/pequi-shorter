@@ -1,0 +1,16 @@
+spring:
+  application:
+    name: pequi-short
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/pequishortdb
+    username: pequishort
+    password: admin
+
+  jpa:
+    hibernate:
+      ddl-auto: create
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
