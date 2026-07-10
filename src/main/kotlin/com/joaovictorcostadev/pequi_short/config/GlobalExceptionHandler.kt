@@ -13,13 +13,6 @@ class GlobalExceptionHandler {
     @ExceptionHandler(MethodArgumentNotValidException::class)
      fun handleValidation(ex: MethodArgumentNotValidException) : ResponseEntity<ResponseDto<Map<String, String>?>> {
 
-        println(ex.bindingResult.fieldErrors.toString());
-
-        val errors: Map<String, String> = ex.bindingResult.fieldErrors.associate {
-            it.field to (it.defaultMessage ?: "Inválido")
-        }
-
-
         return ResponseEntity.badRequest().body(ResponseDto(
             code = HttpStatus.BAD_REQUEST.value(),
             data = null,
@@ -28,7 +21,7 @@ class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(Exception::class)
-    open fun handleException(ex: Exception) : ResponseEntity<ResponseDto<Map<String, String>?>> {
+     fun handleException(ex: Exception) : ResponseEntity<ResponseDto<Map<String, String>?>> {
         ex.printStackTrace()
 
         return ResponseEntity.internalServerError().body(
