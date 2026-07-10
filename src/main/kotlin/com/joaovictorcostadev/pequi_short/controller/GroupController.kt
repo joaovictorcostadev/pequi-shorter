@@ -6,12 +6,13 @@ import com.joaovictorcostadev.pequi_short.service.GroupService
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
+import jakarta.validation.Valid
 
 @RestController
 class GroupController(private val groupService: GroupService) {
 
     @PostMapping("api/group/save")
-    fun save(@RequestBody groupRequest: GroupRequestDto) : GroupResponseDto {
+    fun save(@Valid @RequestBody groupRequest: GroupRequestDto) : GroupResponseDto {
         return groupService.save(groupRequest);
     }
 }
