@@ -18,7 +18,7 @@ class GroupService(val repository: GroupRepository) {
             .body(
                 ResponseDto(
                     code = HttpStatus.OK.value(),
-                    message = "Grupo criado!",
+                    message = "Created group!",
                     data = GroupResponseDto(id = requireNotNull(entitySaved.id), name = entitySaved.name)
                 )
             )

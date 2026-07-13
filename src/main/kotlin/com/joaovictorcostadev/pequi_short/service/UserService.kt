@@ -23,7 +23,7 @@ class UserService(
 
     fun create(user: UserRequestDto) : ResponseEntity<ResponseDto<UserResponseDto>> {
         val group = groupRepository.findById(user.groupId).orElseThrow{
-            RuntimeException("Grupo não Encontrado!")
+            RuntimeException("Group not found!")
         }
         val hashedPassword: String = passwordEncoder.encode(user.password).toString();
         val entity: User = User(name = user.name, email = user.email, password = hashedPassword, updatedAt = Instant.now() , group = group)

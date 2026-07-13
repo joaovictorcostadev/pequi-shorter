@@ -16,7 +16,7 @@ class GlobalExceptionHandler {
         return ResponseEntity.badRequest().body(ResponseDto(
             code = HttpStatus.BAD_REQUEST.value(),
             data = null,
-            message = "Erro de validação: ${ex.bindingResult.fieldError?.field ?: "Campo"} : ${ex.bindingResult.fieldError?.defaultMessage ?: "Inválido"}")
+            message = "Validation error: ${ex.bindingResult.fieldError?.field ?: "Field"} : ${ex.bindingResult.fieldError?.defaultMessage ?: "Invalid"}")
         )
     }
 
