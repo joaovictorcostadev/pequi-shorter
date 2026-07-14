@@ -3,6 +3,7 @@ package com.joaovictorcostadev.pequi_short.dto.user
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.Email
 import jakarta.validation.constraints.NotNull
+import java.time.Instant
 
 data class UserRequestDto(
     @NotBlank
@@ -22,7 +23,11 @@ data class UserResponseDto(
     val groupId: Long,
 )
 
-data class UserAuthDto(
+data class UserAuthRequestDto(
     val email: String,
     val password: String,
+)
+
+data class UserAuthResponseDto(
+    val token: String,
 )
