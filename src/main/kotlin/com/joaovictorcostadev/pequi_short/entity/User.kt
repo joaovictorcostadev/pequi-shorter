@@ -31,7 +31,7 @@ data class User(
     val password: String,
 
     @ManyToOne(
-        fetch = FetchType.LAZY,
+        fetch = FetchType.EAGER,
         optional = false,
         )
     @JoinColumn(

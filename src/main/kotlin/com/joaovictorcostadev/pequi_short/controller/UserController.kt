@@ -27,7 +27,7 @@ class UserController(
 
     @PostMapping("api/user/auth/save")
     fun save(@Valid @RequestBody userRequest: UserRequestDto) :  ResponseEntity<ResponseDto<UserResponseDto>> {
-        return userService.create(userRequest);
+        return userService.save(userRequest);
     }
 
     @PostMapping("api/user/auth/login")

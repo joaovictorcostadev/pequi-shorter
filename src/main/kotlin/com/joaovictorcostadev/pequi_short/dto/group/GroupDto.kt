@@ -1,10 +1,8 @@
 package com.joaovictorcostadev.pequi_short.dto.group
 import jakarta.validation.constraints.NotBlank;
 
-
-
 data class GroupRequestDto(
-    @NotBlank(message = "Nome é obrigatório!")
+    @NotBlank(message = "name is required!")
     val name: String,
 )
 

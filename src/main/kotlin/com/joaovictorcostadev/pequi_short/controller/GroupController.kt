@@ -9,11 +9,13 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
 import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
+import org.springframework.security.access.prepost.PreAuthorize
 
 @RestController
 class GroupController(private val groupService: GroupService) {
 
     @PostMapping("api/group/save")
+    @PreAuthorize("hasAuthority('GROUP_CREATE')")
     fun save(@Valid @RequestBody groupRequest: GroupRequestDto) : ResponseEntity<ResponseDto<GroupResponseDto>> {
         return groupService.save(groupRequest);
     }

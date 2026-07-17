@@ -1,5 +1,6 @@
 package com.joaovictorcostadev.pequi_short.entity
 
+import jakarta.persistence.CascadeType
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.FetchType
@@ -22,6 +23,11 @@ data class Group(
     val name: String,
 
     @OneToMany(mappedBy = "group", fetch = FetchType.LAZY)
-    val users: MutableList<User> = mutableListOf()
+    val users: MutableList<User> = mutableListOf(),
+
+
+// Em Group.kt
+    @OneToMany(mappedBy = "group", cascade = [CascadeType.ALL], orphanRemoval = true)
+    val groupRules: List<GroupRule> = mutableListOf()
 )
 

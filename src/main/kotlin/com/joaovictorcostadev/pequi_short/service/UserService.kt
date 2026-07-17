@@ -21,7 +21,7 @@ class UserService(
     private val passwordEncoder: PasswordEncoder
 ) {
 
-    fun create(user: UserRequestDto) : ResponseEntity<ResponseDto<UserResponseDto>> {
+    fun save(user: UserRequestDto) : ResponseEntity<ResponseDto<UserResponseDto>> {
         val group = groupRepository.findById(user.groupId).orElseThrow{
             RuntimeException("Group not found!")
         }
