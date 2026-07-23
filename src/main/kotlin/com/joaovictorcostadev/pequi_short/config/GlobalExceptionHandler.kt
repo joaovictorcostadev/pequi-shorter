@@ -51,4 +51,13 @@ class GlobalExceptionHandler {
                 message = "Unauthorized"))
 
     }
+
+    @ExceptionHandler(org.springframework.security.access.AccessDeniedException::class)
+    fun handleAccessDeniedException(ex: org.springframework.security.access.AccessDeniedException) : ResponseEntity<ResponseDto<Map<String, String>?>> {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
+            ResponseDto(
+                code = HttpStatus.FORBIDDEN.value(),
+                data = null,
+                message = "Access Denied"))
+    }
 }
