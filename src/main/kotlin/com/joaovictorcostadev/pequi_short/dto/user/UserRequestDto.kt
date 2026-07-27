@@ -31,3 +31,8 @@ data class UserAuthRequestDto(
 data class UserAuthResponseDto(
     val token: String,
 )
+
+data class UserUpdateResponseDto(
+    val email: String?,
+    val name: String?
+)

@@ -42,7 +42,9 @@ class InitialDataSeeder(
             "URL_CREATE",
             "URL_UPDATE",
             "USER_GET",
-        )
+            "USER_UPDATE",
+            "USER_DELETE"
+            )
 
         val adminRules: List<String> = listOf(
             "USER_GET",

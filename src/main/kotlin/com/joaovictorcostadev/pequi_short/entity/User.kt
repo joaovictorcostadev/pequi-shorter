@@ -22,13 +22,13 @@ data class User(
     val id:Long? = null,
 
     @Column(nullable = false)
-    val name: String,
+    var name: String,
 
     @Column(unique = true)
-    val email: String,
+    var email: String,
 
     @Column(nullable = false)
-    val password: String,
+    var password: String,
 
     @ManyToOne(
         fetch = FetchType.EAGER,
