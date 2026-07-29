@@ -7,12 +7,15 @@ import com.joaovictorcostadev.pequi_short.dto.user.UserUpdateResponseDto
 import com.joaovictorcostadev.pequi_short.repository.UserRepository
 import org.springframework.stereotype.Service
 import com.joaovictorcostadev.pequi_short.entity.User
+import com.joaovictorcostadev.pequi_short.enum.GroupEnum
 import com.joaovictorcostadev.pequi_short.repository.GroupRepository
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.context.SecurityContextHolder
+import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.security.crypto.password.PasswordEncoder
+import java.lang.IllegalStateException
 import java.time.Instant
 
 
@@ -35,16 +38,14 @@ class UserService(
             ResponseDto(
                 code = HttpStatus.OK.value(),
                 message = "User created",
-                data = UserResponseDto(name = savedUser.name, email = savedUser.email,savedUser.group.id!!)
+                data = UserResponseDto(name = savedUser.name, email = savedUser.email, groupId = savedUser.group.id!!, id = savedUser.id!!)
             )
         )
     }
 
     fun get(id: Long) : ResponseEntity<ResponseDto<UserResponseDto?>> {
-
         val user:User? = repository.findByIdOrNull(id);
-
-        val authetication = SecurityContextHolder.getContext().authentication
+        val loggedUser = repository.findByEmail(getCurrentUserName())
 
         if(user == null) {
             return ResponseEntity
@@ -58,12 +59,24 @@ class UserService(
                 )
         }
 
+        if(loggedUser?.id != id && loggedUser?.group?.id != GroupEnum.ADMIN.id) {
+            return ResponseEntity
+                .status(HttpStatus.FORBIDDEN)
+                .body(
+                    ResponseDto(
+                        code = HttpStatus.FORBIDDEN.value(),
+                        data = null,
+                        message = "Forbidden!"
+                    )
+                )
+        }
+
         return ResponseEntity
             .ok()
             .body(
                 ResponseDto(
                     code = HttpStatus.OK.value(),
-                    data = UserResponseDto(user.name, email = user.email, groupId = user.group.id!!),
+                    data = UserResponseDto(user.name, email = user.email, groupId = user.group.id!!, id = user.id!!),
                     message = "User found!"
                 )
             )
@@ -71,6 +84,7 @@ class UserService(
 
     fun update(body: UserUpdateResponseDto, id:Long) : ResponseEntity<ResponseDto<UserResponseDto?>> {
         val user:User? = repository.findByIdOrNull(id);
+        val loggedUser = repository.findByEmail(getCurrentUserName())
 
         if(user == null) {
             return ResponseEntity
@@ -80,6 +94,18 @@ class UserService(
                         code = HttpStatus.BAD_REQUEST.value(),
                         data = null,
                         message = "User not found!"
+                    )
+                )
+        }
+
+        if(loggedUser?.id != id && loggedUser?.group?.id != GroupEnum.ADMIN.id) {
+            return ResponseEntity
+                .status(HttpStatus.FORBIDDEN)
+                .body(
+                    ResponseDto(
+                        code = HttpStatus.FORBIDDEN.value(),
+                        data = null,
+                        message = "Forbidden!"
                     )
                 )
         }
@@ -93,7 +119,7 @@ class UserService(
             .body(
                 ResponseDto(
                     code = HttpStatus.OK.value(),
-                    data = UserResponseDto(user.name, email = user.email, groupId = user.group.id!!),
+                    data = UserResponseDto(user.name, email = user.email, groupId = user.group.id!!, id = user.id!!),
                     message = "User updated!"
                 )
             )
@@ -122,11 +148,27 @@ class UserService(
             .body(
                 ResponseDto(
                     code = HttpStatus.OK.value(),
-                    data = UserResponseDto(name = user.name, email = user.email, groupId = user.group.id!!),
+                    data = UserResponseDto(name = user.name, email = user.email, groupId = user.group.id!!, id = user.id!!),
                     message = "User Deleted!"
                     )
             )
 
     }
+
+    private fun getCurrentUserName() : String {
+        val authentication = SecurityContextHolder.getContext().authentication
+        if(authentication != null && authentication.isAuthenticated) {
+            val principal = authentication.principal
+
+            if(principal is UserDetails) {
+                return principal.username
+            }
+
+            return principal.toString()
+        }
+
+        throw IllegalStateException("Not user Logged")
+    }
+
 
 }

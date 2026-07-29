@@ -21,6 +21,7 @@ data class UserResponseDto(
     val name: String,
     val email: String,
     val groupId: Long,
+    val id: Long
 )
 
 data class UserAuthRequestDto(
