@@ -1,5 +1,6 @@
 package com.joaovictorcostadev.pequi_short.dto.user
 
+import com.fasterxml.jackson.annotation.JsonProperty
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.Email
 import jakarta.validation.constraints.NotNull
@@ -13,6 +14,7 @@ data class UserRequestDto(
     @NotBlank
     val password: String,
     @NotNull
+    @JsonProperty("group_id")
     val groupId: Long,
 
 )
@@ -20,6 +22,7 @@ data class UserRequestDto(
 data class UserResponseDto(
     val name: String,
     val email: String,
+    @JsonProperty("group_id")
     val groupId: Long,
     val id: Long
 )
