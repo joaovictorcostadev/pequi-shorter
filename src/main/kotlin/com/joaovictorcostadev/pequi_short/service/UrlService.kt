@@ -43,7 +43,7 @@ class UrlService(
             .body(
                 ResponseDto(
                     code = HttpStatus.OK.value(),
-                    data = UrlDtoResponse(id = savedUrl.id!!, name = savedUrl.externalUrl, userId = user.id!!, externalUrl = savedUrl.externalUrl),
+                    data = UrlDtoResponse(id = savedUrl.id!!, name = savedUrl.name, userId = user.id!!, externalUrl = savedUrl.externalUrl),
                     message = "Url created!")
             )
     }
