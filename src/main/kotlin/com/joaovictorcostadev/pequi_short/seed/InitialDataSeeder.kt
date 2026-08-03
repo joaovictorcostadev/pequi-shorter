@@ -35,7 +35,7 @@ class InitialDataSeeder(
             Rule(name = "USER_UPDATE"),
             Rule(name = "USER_DELETE"),
             Rule(name = "USER_CREATE"),
-        ))
+            ))
 
         val  userRules: List<String> = listOf<String>(
             "URL_GET",
@@ -43,7 +43,7 @@ class InitialDataSeeder(
             "URL_UPDATE",
             "USER_GET",
             "USER_UPDATE",
-            "USER_DELETE"
+            "USER_DELETE",
             )
 
         val adminRules: List<String> = listOf(
