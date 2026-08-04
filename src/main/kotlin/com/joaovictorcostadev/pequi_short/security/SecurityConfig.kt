@@ -30,6 +30,7 @@ class SecurityConfig (
             .csrf { it.disable() }
             .authorizeHttpRequests {
                 it.requestMatchers("/api/user/auth/**").permitAll()
+                it.requestMatchers("/r/*").permitAll()
                 it.anyRequest().authenticated()
             }
             .sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.STATELESS) }

@@ -11,6 +11,7 @@ import org.springframework.data.repository.findByIdOrNull
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
+import java.net.URI
 import java.time.Instant
 
 @Service
@@ -27,7 +28,19 @@ class UrlService(
                 .body(
                     ResponseDto(
                         code = HttpStatus.NOT_FOUND.value(),
-                        data = null, message = "")
+                        data = null, message = "User not found!")
+                )
+        }
+
+        val urlExist: Url? = repository.findByName(urlDtoRequest.name)
+
+        if(urlExist != null) {
+            return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(
+                    ResponseDto(
+                        code = HttpStatus.BAD_REQUEST.value(),
+                        data = null, message = "Url existed!")
                 )
         }
 
@@ -46,6 +59,27 @@ class UrlService(
                     data = UrlDtoResponse(id = savedUrl.id!!, name = savedUrl.name, userId = user.id!!, externalUrl = savedUrl.externalUrl),
                     message = "Url created!")
             )
+    }
+
+    fun redirect(name: String) :  ResponseEntity<Any> {
+
+        val url:Url? = repository.findByName(name);
+
+        if(url == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(
+                    ResponseDto(
+                        code = HttpStatus.NOT_FOUND.value(),
+                        data = null, message = "")
+                )
+        }
+
+
+        return ResponseEntity
+            .status(HttpStatus.FOUND)
+            .location(URI.create(url.externalUrl))
+            .build()
+
     }
 
 }
