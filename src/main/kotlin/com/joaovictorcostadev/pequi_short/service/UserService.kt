@@ -9,13 +9,11 @@ import org.springframework.stereotype.Service
 import com.joaovictorcostadev.pequi_short.entity.User
 import com.joaovictorcostadev.pequi_short.enum.GroupEnum
 import com.joaovictorcostadev.pequi_short.repository.GroupRepository
+import com.joaovictorcostadev.pequi_short.security.UserAuthenticated
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
-import org.springframework.security.core.context.SecurityContextHolder
-import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.security.crypto.password.PasswordEncoder
-import java.lang.IllegalStateException
 import java.time.Instant
 
 
@@ -23,7 +21,8 @@ import java.time.Instant
 class UserService(
     private val repository: UserRepository,
     private val groupRepository: GroupRepository,
-    private val passwordEncoder: PasswordEncoder
+    private val passwordEncoder: PasswordEncoder,
+    private val userAuthenticated: UserAuthenticated
 ) {
 
     fun save(user: UserRequestDto) : ResponseEntity<ResponseDto<UserResponseDto>> {
@@ -45,7 +44,7 @@ class UserService(
 
     fun get(id: Long) : ResponseEntity<ResponseDto<UserResponseDto?>> {
         val user:User? = repository.findByIdOrNull(id);
-        val loggedUser = repository.findByEmail(getCurrentUserName())
+        val loggedUser = repository.findByEmail(userAuthenticated.getUsernameLogged())
 
         if(user == null) {
             return ResponseEntity
@@ -84,7 +83,7 @@ class UserService(
 
     fun update(body: UserUpdateResponseDto, id:Long) : ResponseEntity<ResponseDto<UserResponseDto?>> {
         val user:User? = repository.findByIdOrNull(id);
-        val loggedUser = repository.findByEmail(getCurrentUserName())
+        val loggedUser = repository.findByEmail(userAuthenticated.getUsernameLogged())
 
         if(user == null) {
             return ResponseEntity
@@ -154,21 +153,5 @@ class UserService(
             )
 
     }
-
-    private fun getCurrentUserName() : String {
-        val authentication = SecurityContextHolder.getContext().authentication
-        if(authentication != null && authentication.isAuthenticated) {
-            val principal = authentication.principal
-
-            if(principal is UserDetails) {
-                return principal.username
-            }
-
-            return principal.toString()
-        }
-
-        throw IllegalStateException("Not user Logged")
-    }
-
 
 }
