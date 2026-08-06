@@ -66,7 +66,7 @@ class InitialDataSeeder(
             }
         }
 
-        userService.save(UserRequestDto(name = "Joao Victor", email = "teste@gmail.com", "teste@123", groupId = groupUser.id!!))
+        userService.save(UserRequestDto(name = "Joao Victor", email = "joao@example.com", "securePassword123", groupId = groupUser.id!!))
 
     }
 }

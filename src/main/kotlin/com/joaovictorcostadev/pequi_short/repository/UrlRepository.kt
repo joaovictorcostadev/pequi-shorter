@@ -6,4 +6,6 @@ import org.springframework.data.jpa.repository.JpaRepository
 interface UrlRepository : JpaRepository<Url, Long> {
 
     fun findByName(name: String) : Url?
+
+    fun findByUserId(id: Long) : List<Url>
 }

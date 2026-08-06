@@ -5,8 +5,10 @@ import com.joaovictorcostadev.pequi_short.dto.url.UrlDtoRequest
 import com.joaovictorcostadev.pequi_short.dto.url.UrlDtoResponse
 import com.joaovictorcostadev.pequi_short.entity.Url
 import com.joaovictorcostadev.pequi_short.entity.User
+import com.joaovictorcostadev.pequi_short.enum.GroupEnum
 import com.joaovictorcostadev.pequi_short.repository.UrlRepository
 import com.joaovictorcostadev.pequi_short.repository.UserRepository
+import com.joaovictorcostadev.pequi_short.security.UserAuthenticated
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -17,11 +19,13 @@ import java.time.Instant
 @Service
 class UrlService(
     val repository: UrlRepository,
-    val userRepository: UserRepository
+    val userRepository: UserRepository,
+    val userAuthenticated: UserAuthenticated,
 ) {
 
     fun save( urlDtoRequest: UrlDtoRequest) : ResponseEntity<ResponseDto<UrlDtoResponse?>> {
         val user: User? = userRepository.findByIdOrNull(urlDtoRequest.userId)
+        val loggedUser = userRepository.findByEmail(userAuthenticated.getUsernameLogged())
 
         if(user == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
@@ -29,6 +33,18 @@ class UrlService(
                     ResponseDto(
                         code = HttpStatus.NOT_FOUND.value(),
                         data = null, message = "User not found!")
+                )
+        }
+
+        if(loggedUser?.id != user.id!! && loggedUser?.group?.id != GroupEnum.ADMIN.id) {
+            return ResponseEntity
+                .status(HttpStatus.FORBIDDEN)
+                .body(
+                    ResponseDto(
+                        code = HttpStatus.FORBIDDEN.value(),
+                        data = null,
+                        message = "Forbidden!"
+                    )
                 )
         }
 
@@ -61,6 +77,30 @@ class UrlService(
             )
     }
 
+    fun get() : ResponseEntity<ResponseDto<List<UrlDtoResponse>?>> {
+        val loggedUser = userRepository.findByEmail(userAuthenticated.getUsernameLogged())
+            ?: return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(
+                    ResponseDto(
+                        code = HttpStatus.NOT_FOUND.value(),
+                        data = null, message = "User not found!"
+                    )
+                )
+
+        val urls = repository.findByUserId(loggedUser.id!!)
+            .map {
+                UrlDtoResponse(
+                    name = it.name,
+                    externalUrl = it.externalUrl,
+                    userId = it.user.id!!,
+                    id = it.id!!
+                )
+            }
+
+        return ResponseEntity.ok().body(ResponseDto(code = HttpStatus.OK.value(), data = urls, message = "Urls found!"))
+
+    }
+
     fun redirect(name: String) :  ResponseEntity<Any> {
 
         val url:Url? = repository.findByName(name);
@@ -79,6 +119,56 @@ class UrlService(
             .status(HttpStatus.FOUND)
             .location(URI.create(url.externalUrl))
             .build()
+
+    }
+
+    fun delete(id:Long) : ResponseEntity<ResponseDto<UrlDtoResponse?>> {
+        val url: Url? = repository.findByIdOrNull(id)
+            ?: return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(
+                    ResponseDto(
+                        code = HttpStatus.NOT_FOUND.value(),
+                        data = null, message = "Url not found!")
+                ) ;
+
+        val user = userRepository.findByIdOrNull(url!!.user.id!!)
+        val loggedUser = userRepository.findByEmail(userAuthenticated.getUsernameLogged())
+
+        if(user == null || loggedUser == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(
+                    ResponseDto(
+                        code = HttpStatus.NOT_FOUND.value(),
+                        data = null, message = "User not found!")
+                )
+        }
+
+        if(loggedUser?.id != user.id!! && loggedUser?.group?.id != GroupEnum.ADMIN.id) {
+            return ResponseEntity
+                .status(HttpStatus.FORBIDDEN)
+                .body(
+                    ResponseDto(
+                        code = HttpStatus.FORBIDDEN.value(),
+                        data = null,
+                        message = "Forbidden!"
+                    )
+                )
+        }
+
+        repository.delete(url)
+
+        return ResponseEntity.ok()
+            .body(
+                ResponseDto(
+                    code = HttpStatus.OK.value(),
+                    data = UrlDtoResponse(
+                        name = url.name,
+                        externalUrl = url.externalUrl,
+                        id = url.id!!,
+                        userId = url.user.id!!),
+                    message = "Url deleted!")
+            )
 
     }
 

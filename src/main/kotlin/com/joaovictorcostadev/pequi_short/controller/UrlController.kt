@@ -6,6 +6,7 @@ import com.joaovictorcostadev.pequi_short.dto.url.UrlDtoResponse
 import com.joaovictorcostadev.pequi_short.service.UrlService
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
+import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -26,4 +27,19 @@ class UrlController (val urlService: UrlService) {
     {
         return urlService.redirect(name)
     }
+
+
+    @GetMapping("/api/url/get")
+    @PreAuthorize("hasAuthority('URL_GET')")
+    fun redirectUrl() : ResponseEntity<ResponseDto<List<UrlDtoResponse>?>>
+    {
+        return urlService.get()
+    }
+
+    @DeleteMapping("/api/url/delete/{id}")
+    @PreAuthorize("hasAuthority('URL_DELETE')")
+    fun delete(@PathVariable id: Long) : ResponseEntity<ResponseDto<UrlDtoResponse?>> {
+        return urlService.delete(id)
+    }
+
 }
