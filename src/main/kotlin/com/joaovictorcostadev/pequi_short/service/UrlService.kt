@@ -1,6 +1,8 @@
 package com.joaovictorcostadev.pequi_short.service
 
+import com.joaovictorcostadev.pequi_short.dto.geoip.GeoIpDto
 import com.joaovictorcostadev.pequi_short.dto.response.ResponseDto
+import com.joaovictorcostadev.pequi_short.dto.url.UrlAccessDTO
 import com.joaovictorcostadev.pequi_short.dto.url.UrlDtoRequest
 import com.joaovictorcostadev.pequi_short.dto.url.UrlDtoResponse
 import com.joaovictorcostadev.pequi_short.entity.Url
@@ -9,6 +11,8 @@ import com.joaovictorcostadev.pequi_short.enum.GroupEnum
 import com.joaovictorcostadev.pequi_short.repository.UrlRepository
 import com.joaovictorcostadev.pequi_short.repository.UserRepository
 import com.joaovictorcostadev.pequi_short.security.UserAuthenticated
+import com.joaovictorcostadev.pequi_short.util.getClientIp
+import jakarta.servlet.http.HttpServletRequest
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -21,6 +25,8 @@ class UrlService(
     val repository: UrlRepository,
     val userRepository: UserRepository,
     val userAuthenticated: UserAuthenticated,
+    val geoIpService: GeoIpService,
+    val urlAccessService: UrlAccessService
 ) {
 
     fun save( urlDtoRequest: UrlDtoRequest) : ResponseEntity<ResponseDto<UrlDtoResponse?>> {
@@ -101,7 +107,7 @@ class UrlService(
 
     }
 
-    fun redirect(name: String) :  ResponseEntity<Any> {
+    fun redirect(name: String, request: HttpServletRequest) :  ResponseEntity<Any> {
 
         val url:Url? = repository.findByName(name);
 
@@ -114,6 +120,24 @@ class UrlService(
                 )
         }
 
+        val ip:String = request.getClientIp()
+        val geoIp: GeoIpDto = geoIpService.getLocation(ip)
+        val urlAccessDTO: UrlAccessDTO = UrlAccessDTO(
+            userId = url.user.id!!,
+            urlId = url.id!!,
+            ip = ip,
+            state = geoIp.stateName,
+            city = geoIp.cityName,
+            country = geoIp.countryName,
+            userAgent = request.getHeader("User-Agent"),
+            browser = request.getHeader("User-Agent"),
+            operatingSystem = request.getHeader("User-Agent"),
+            deviceType = request.getHeader("User-Agent"),
+            referrer = request.getHeader("User-Agent"),
+            updatedAt = Instant.now(),
+        )
+
+        urlAccessService.save(urlAccessDTO)
 
         return ResponseEntity
             .status(HttpStatus.FOUND)

@@ -25,6 +25,7 @@ dependencies {
 	implementation("org.jetbrains.kotlin:kotlin-reflect")
 	implementation("tools.jackson.module:jackson-module-kotlin")
     implementation("org.bouncycastle:bcprov-jdk18on:1.78.1")
+    implementation("com.maxmind.geoip2:geoip2:5.1.0")
 
     implementation("io.jsonwebtoken:jjwt-api:0.12.7")
     runtimeOnly("io.jsonwebtoken:jjwt-impl:0.12.7")

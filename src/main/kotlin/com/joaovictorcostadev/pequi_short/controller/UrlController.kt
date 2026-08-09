@@ -4,6 +4,7 @@ import com.joaovictorcostadev.pequi_short.dto.response.ResponseDto
 import com.joaovictorcostadev.pequi_short.dto.url.UrlDtoRequest
 import com.joaovictorcostadev.pequi_short.dto.url.UrlDtoResponse
 import com.joaovictorcostadev.pequi_short.service.UrlService
+import jakarta.servlet.http.HttpServletRequest
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -23,9 +24,9 @@ class UrlController (val urlService: UrlService) {
     }
 
     @GetMapping("/r/{name}")
-    fun redirectUrl(@PathVariable name: String) : ResponseEntity<Any>
+    fun redirectUrl(@PathVariable name: String, request: HttpServletRequest) : ResponseEntity<Any>
     {
-        return urlService.redirect(name)
+        return urlService.redirect(name, request)
     }
 
 
