@@ -30,12 +30,7 @@ import javax.crypto.SecretKey
 @RestController
 class UserController(
     private val userService: UserService,
-    private val userDetailsService: CustomUserDetailsService,
-    private val tokenService: TokenService,
-    private val authenticatorManager: AuthenticationManager,
 
-    @Value($$"${jwt.expiration}")
-    private val expiration: Long
 ) {
 
 
@@ -47,20 +42,7 @@ class UserController(
     @PostMapping("api/user/auth/login")
     fun auth(@Valid @RequestBody userAuthRequest: UserAuthRequestDto) : ResponseEntity<ResponseDto<UserAuthResponseDto>> {
 
-        authenticatorManager.authenticate(
-            UsernamePasswordAuthenticationToken(userAuthRequest.email, userAuthRequest.password)
-        )
-
-        val userDetails = userDetailsService.loadUserByUsername(userAuthRequest.email)
-        val token = tokenService.generateToken(userDetails)
-
-        return ResponseEntity.ok(ResponseDto(
-            code = HttpStatus.OK.value(),
-            message = "Authorized",
-            data = UserAuthResponseDto(
-                token = token,
-                iat = System.currentTimeMillis(),
-                exp = System.currentTimeMillis() + expiration)))
+        return  userService.auth(userAuthRequest)
     }
 
     @PreAuthorize("hasAuthority('USER_GET')")
