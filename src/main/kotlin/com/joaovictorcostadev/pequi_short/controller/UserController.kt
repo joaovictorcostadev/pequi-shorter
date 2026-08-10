@@ -9,10 +9,12 @@ import com.joaovictorcostadev.pequi_short.dto.user.UserUpdateResponseDto
 import com.joaovictorcostadev.pequi_short.service.CustomUserDetailsService
 import com.joaovictorcostadev.pequi_short.service.TokenService
 import com.joaovictorcostadev.pequi_short.service.UserService
+import io.jsonwebtoken.security.Keys
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
 import jakarta.validation.Valid
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
@@ -22,14 +24,20 @@ import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PutMapping
+import java.time.Instant
+import javax.crypto.SecretKey
 
 @RestController
 class UserController(
     private val userService: UserService,
     private val userDetailsService: CustomUserDetailsService,
     private val tokenService: TokenService,
-    private val authenticatorManager: AuthenticationManager
-    ) {
+    private val authenticatorManager: AuthenticationManager,
+
+    @Value($$"${jwt.expiration}")
+    private val expiration: Long
+) {
+
 
     @PostMapping("api/user/auth/save")
     fun save(@Valid @RequestBody userRequest: UserRequestDto) :  ResponseEntity<ResponseDto<UserResponseDto>> {
@@ -46,7 +54,13 @@ class UserController(
         val userDetails = userDetailsService.loadUserByUsername(userAuthRequest.email)
         val token = tokenService.generateToken(userDetails)
 
-        return ResponseEntity.ok(ResponseDto(code = HttpStatus.OK.value(), message = "Authorized", data = UserAuthResponseDto(token)))
+        return ResponseEntity.ok(ResponseDto(
+            code = HttpStatus.OK.value(),
+            message = "Authorized",
+            data = UserAuthResponseDto(
+                token = token,
+                iat = System.currentTimeMillis(),
+                exp = System.currentTimeMillis() + expiration)))
     }
 
     @PreAuthorize("hasAuthority('USER_GET')")

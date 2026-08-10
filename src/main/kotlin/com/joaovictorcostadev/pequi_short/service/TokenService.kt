@@ -10,10 +10,10 @@ import javax.crypto.SecretKey
 
 @Service
 class TokenService (
-    @Value("\${jwt.secret}")
+    @Value($$"${jwt.secret}")
     private val secretString: String,
 
-    @Value("\${jwt.expiration}")
+    @Value($$"${jwt.expiration}")
     private val expiration: Long
 
     ) {

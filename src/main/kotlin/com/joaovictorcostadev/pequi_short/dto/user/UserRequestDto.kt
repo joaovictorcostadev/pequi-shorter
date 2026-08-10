@@ -34,6 +34,8 @@ data class UserAuthRequestDto(
 
 data class UserAuthResponseDto(
     val token: String,
+    val exp: Long,
+    val iat: Long,
 )
 
 data class UserUpdateResponseDto(
