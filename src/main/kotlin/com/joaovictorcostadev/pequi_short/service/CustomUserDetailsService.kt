@@ -2,7 +2,6 @@ package com.joaovictorcostadev.pequi_short.service
 
 import com.joaovictorcostadev.pequi_short.entity.GroupRule
 import com.joaovictorcostadev.pequi_short.repository.UserRepository
-import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.core.userdetails.User
 import org.springframework.security.core.userdetails.UserDetails

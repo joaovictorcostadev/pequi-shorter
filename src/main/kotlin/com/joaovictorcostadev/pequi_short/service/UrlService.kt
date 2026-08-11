@@ -109,20 +109,17 @@ class UrlService(
 
     fun redirect(name: String, request: HttpServletRequest) :  ResponseEntity<Any> {
 
-        val url:Url? = repository.findByName(name);
-
-        if(url == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(
-                    ResponseDto(
-                        code = HttpStatus.NOT_FOUND.value(),
-                        data = null, message = "")
+        val url: Url = repository.findByName(name) ?: return ResponseEntity.status(HttpStatus.NOT_FOUND)
+            .body(
+                ResponseDto(
+                    code = HttpStatus.NOT_FOUND.value(),
+                    data = null, message = ""
                 )
-        }
+            )
 
         val ip:String = request.getClientIp()
         val geoIp: GeoIpDto = geoIpService.getLocation(ip)
-        val urlAccessDTO: UrlAccessDTO = UrlAccessDTO(
+        val urlAccessDTO = UrlAccessDTO(
             userId = url.user.id!!,
             urlId = url.id!!,
             ip = ip,
@@ -147,16 +144,16 @@ class UrlService(
     }
 
     fun delete(id:Long) : ResponseEntity<ResponseDto<UrlDtoResponse?>> {
-        val url: Url? = repository.findByIdOrNull(id)
+        val url: Url = repository.findByIdOrNull(id)
             ?: return ResponseEntity
                 .status(HttpStatus.NOT_FOUND)
                 .body(
                     ResponseDto(
                         code = HttpStatus.NOT_FOUND.value(),
                         data = null, message = "Url not found!")
-                ) ;
+                )
 
-        val user = userRepository.findByIdOrNull(url!!.user.id!!)
+        val user = userRepository.findByIdOrNull(url.user.id!!)
         val loggedUser = userRepository.findByEmail(userAuthenticated.getUsernameLogged())
 
         if(user == null || loggedUser == null) {
@@ -168,7 +165,7 @@ class UrlService(
                 )
         }
 
-        if(loggedUser?.id != user.id!! && loggedUser?.group?.id != GroupEnum.ADMIN.id) {
+        if(loggedUser.id != user.id!! && loggedUser.group.id != GroupEnum.ADMIN.id) {
             return ResponseEntity
                 .status(HttpStatus.FORBIDDEN)
                 .body(

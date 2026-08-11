@@ -20,7 +20,7 @@ class GeoIpService (
 
     fun getLocation(ipAddress: String) : GeoIpDto {
         try {
-            val inetAddress: InetAddress = InetAddress.getByName(ipAddress);
+            val inetAddress: InetAddress = InetAddress.getByName(ipAddress)
             val response = databaseReader.city(inetAddress)
 
             val countryName: String = response.country().name() ?: "UNKNOW"

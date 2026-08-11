@@ -42,8 +42,8 @@ class UserService(
             RuntimeException("Group not found!")
         }
 
-        val hashedPassword: String = passwordEncoder.encode(user.password).toString();
-        val entity: User = User(name = user.name, email = user.email, password = hashedPassword, updatedAt = Instant.now() , group = group)
+        val hashedPassword: String = passwordEncoder.encode(user.password).toString()
+        val entity = User(name = user.name, email = user.email, password = hashedPassword, updatedAt = Instant.now() , group = group)
         val savedUser: User = repository.save(entity)
         return ResponseEntity.ok(
             ResponseDto(
@@ -55,7 +55,7 @@ class UserService(
     }
 
     fun get(id: Long) : ResponseEntity<ResponseDto<UserResponseDto?>> {
-        val user:User? = repository.findByIdOrNull(id);
+        val user:User? = repository.findByIdOrNull(id)
         val loggedUser = repository.findByEmail(userAuthenticated.getUsernameLogged())
 
         if(user == null) {
@@ -94,7 +94,7 @@ class UserService(
     }
 
     fun update(body: UserUpdateResponseDto, id:Long) : ResponseEntity<ResponseDto<UserResponseDto?>> {
-        val user:User? = repository.findByIdOrNull(id);
+        val user:User? = repository.findByIdOrNull(id)
         val loggedUser = repository.findByEmail(userAuthenticated.getUsernameLogged())
 
         if(user == null) {
@@ -138,21 +138,16 @@ class UserService(
     }
 
     fun delete(id: Long) : ResponseEntity<ResponseDto<UserResponseDto?>> {
-        val user:User? = repository.findByIdOrNull(id);
-
-        if(user == null) {
-            return ResponseEntity
-                .badRequest().
-                body(
-                    ResponseDto(
-                        code = HttpStatus.BAD_REQUEST.value(),
-                        data = null,
-                        message = "User not found!"
-                    )
+        val user: User = repository.findByIdOrNull(id) ?: return ResponseEntity
+            .badRequest().body(
+                ResponseDto(
+                    code = HttpStatus.BAD_REQUEST.value(),
+                    data = null,
+                    message = "User not found!"
                 )
-        }
+            )
 
-        repository.delete(user);
+        repository.delete(user)
 
         return ResponseEntity
             .ok()
