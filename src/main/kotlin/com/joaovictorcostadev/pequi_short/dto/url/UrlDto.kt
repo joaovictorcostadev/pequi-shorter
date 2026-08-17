@@ -25,4 +25,5 @@ data class UrlDtoResponse(
     val externalUrl: String,
     @JsonProperty("user_id")
     val userId: Long,
+    val url: String,
 )

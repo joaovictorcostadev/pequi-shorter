@@ -13,6 +13,7 @@ import com.joaovictorcostadev.pequi_short.repository.UserRepository
 import com.joaovictorcostadev.pequi_short.security.UserAuthenticated
 import com.joaovictorcostadev.pequi_short.util.getClientIp
 import jakarta.servlet.http.HttpServletRequest
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -26,7 +27,11 @@ class UrlService(
     val userRepository: UserRepository,
     val userAuthenticated: UserAuthenticated,
     val geoIpService: GeoIpService,
-    val urlAccessService: UrlAccessService
+    val urlAccessService: UrlAccessService,
+
+
+    @Value($$"${host.name}")
+    private val hostName: String
 ) {
 
     fun save( urlDtoRequest: UrlDtoRequest) : ResponseEntity<ResponseDto<UrlDtoResponse?>> {
@@ -78,7 +83,7 @@ class UrlService(
             .body(
                 ResponseDto(
                     code = HttpStatus.OK.value(),
-                    data = UrlDtoResponse(id = savedUrl.id!!, name = savedUrl.name, userId = user.id!!, externalUrl = savedUrl.externalUrl),
+                    data = UrlDtoResponse(id = savedUrl.id!!, name = savedUrl.name, userId = user.id!!, externalUrl = savedUrl.externalUrl, url = "${hostName}/r/${savedUrl.name}"),
                     message = "Url created!")
             )
     }
@@ -99,7 +104,8 @@ class UrlService(
                     name = it.name,
                     externalUrl = it.externalUrl,
                     userId = it.user.id!!,
-                    id = it.id!!
+                    id = it.id!!,
+                    url = "${hostName}/r/${it.name}"
                 )
             }
 
@@ -187,7 +193,9 @@ class UrlService(
                         name = url.name,
                         externalUrl = url.externalUrl,
                         id = url.id!!,
-                        userId = url.user.id!!),
+                        userId = url.user.id!!,
+                        url = "${hostName}/r/${url.name}"
+                        ),
                     message = "Url deleted!")
             )
 

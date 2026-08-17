@@ -14,7 +14,9 @@ import com.joaovictorcostadev.pequi_short.repository.GroupRepository
 import com.joaovictorcostadev.pequi_short.security.UserAuthenticated
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.data.repository.findByIdOrNull
+import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
+import org.springframework.http.ResponseCookie
 import org.springframework.http.ResponseEntity
 import org.springframework.security.authentication.AuthenticationManager
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
@@ -169,13 +171,25 @@ class UserService(
         val userDetails = userDetailsService.loadUserByUsername(userAuthRequest.email)
         val token = tokenService.generateToken(userDetails)
 
-        return ResponseEntity.ok(ResponseDto(
-            code = HttpStatus.OK.value(),
-            message = "Authorized",
-            data = UserAuthResponseDto(
+        val cookie: ResponseCookie = ResponseCookie.from(
+            "token", token)
+            .httpOnly(true)
+            .path("/")
+            .maxAge(expiration / 1000)
+            .build()
+
+        return ResponseEntity.ok()
+            .header(HttpHeaders.SET_COOKIE, cookie.toString())
+            .body(
+                ResponseDto(
+                code = HttpStatus.OK.value(),
+                message = "Authorized",
+                data = UserAuthResponseDto(
                 token = token,
                 iat = System.currentTimeMillis(),
-                exp = System.currentTimeMillis() + expiration)))
+                exp = System.currentTimeMillis() + expiration)
+                )
+            )
 
     }
 

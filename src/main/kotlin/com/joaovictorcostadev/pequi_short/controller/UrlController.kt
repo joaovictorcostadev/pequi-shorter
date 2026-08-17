@@ -39,7 +39,7 @@ class UrlController (val urlService: UrlService) {
 
     @DeleteMapping("/api/url/delete/{id}")
     @PreAuthorize("hasAuthority('URL_DELETE')")
-    fun delete(@PathVariable id: Long) : ResponseEntity<ResponseDto<UrlDtoResponse?>> {
+        fun delete(@PathVariable id: Long) : ResponseEntity<ResponseDto<UrlDtoResponse?>> {
         return urlService.delete(id)
     }
 

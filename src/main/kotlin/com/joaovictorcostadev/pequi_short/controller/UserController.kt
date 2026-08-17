@@ -29,9 +29,7 @@ import javax.crypto.SecretKey
 
 @RestController
 class UserController(
-    private val userService: UserService,
-
-) {
+    private val userService: UserService) {
 
 
     @PostMapping("api/user/auth/save")
