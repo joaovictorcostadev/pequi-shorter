@@ -11,7 +11,10 @@ import com.joaovictorcostadev.pequi_short.enum.GroupEnum
 import com.joaovictorcostadev.pequi_short.repository.UrlRepository
 import com.joaovictorcostadev.pequi_short.repository.UserRepository
 import com.joaovictorcostadev.pequi_short.security.UserAuthenticated
+import com.joaovictorcostadev.pequi_short.util.getBrowser
 import com.joaovictorcostadev.pequi_short.util.getClientIp
+import com.joaovictorcostadev.pequi_short.util.getDeviceType
+import com.joaovictorcostadev.pequi_short.util.getOs
 import jakarta.servlet.http.HttpServletRequest
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.data.repository.findByIdOrNull
@@ -133,10 +136,9 @@ class UrlService(
             city = geoIp.cityName,
             country = geoIp.countryName,
             userAgent = request.getHeader("User-Agent"),
-            browser = request.getHeader("User-Agent"),
-            operatingSystem = request.getHeader("User-Agent"),
-            deviceType = request.getHeader("User-Agent"),
-            referrer = request.getHeader("User-Agent"),
+            browser = request.getBrowser(),
+            operatingSystem = request.getOs(),
+            deviceType = request.getDeviceType(),
             updatedAt = Instant.now(),
         )
 

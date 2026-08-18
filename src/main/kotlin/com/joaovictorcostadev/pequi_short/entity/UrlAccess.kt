@@ -49,9 +49,6 @@ data class UrlAccess (
     @Column(name = "user_agent")
     val userAgent: String? = null,
 
-    @Column(name = "referrer")
-    val referrer: String? = null,
-
     @Column(name = "created_at")
     val createdAt: Instant = Instant.now(),
 
