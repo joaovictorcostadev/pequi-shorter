@@ -19,7 +19,7 @@ data class Group(
     val id: Long? = null,
 
     @Column("name")
-    val name: String,
+    var name: String,
 
 // Em Group.kt
     @OneToMany(mappedBy = "group", cascade = [CascadeType.ALL], orphanRemoval = true)

@@ -35,6 +35,11 @@ class InitialDataSeeder(
             Rule(name = "USER_UPDATE"),
             Rule(name = "USER_DELETE"),
             Rule(name = "USER_CREATE"),
+            Rule(name = "GROUP_GET"),
+            Rule(name = "GROUP_GET_ALL"),
+            Rule(name = "GROUP_CREATE"),
+            Rule(name = "GROUP_UPDATE"),
+            Rule(name = "GROUP_DELETE"),
             ))
 
         val  userRules: List<String> = listOf<String>(
@@ -54,7 +59,12 @@ class InitialDataSeeder(
             "URL_GET",
             "URL_CREATE",
             "URL_UPDATE",
-            "URL_DELETE"
+            "URL_DELETE",
+            "GROUP_GET",
+            "GROUP_GET_ALL",
+            "GROUP_CREATE",
+            "GROUP_UPDATE",
+            "GROUP_DELETE",
         )
 
         for (rule in rules) {
@@ -66,7 +76,8 @@ class InitialDataSeeder(
             }
         }
 
-        userService.save(UserRequestDto(name = "Joao Victor", email = "joao@example.com", "securePassword123", groupId = groupUser.id!!))
+        userService.save(UserRequestDto(name = "Joao Victor", email = "user@gmail.com", "user123", groupId = groupUser.id!!))
+        userService.save(UserRequestDto(name = "Joao Victor", email = "admin@gmail.com", "admin123", groupId = groupAdmin.id!!))
 
     }
 }
