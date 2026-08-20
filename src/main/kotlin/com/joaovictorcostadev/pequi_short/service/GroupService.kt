@@ -49,4 +49,43 @@ class GroupService(val repository: GroupRepository) {
 
     }
 
+    fun getAll() : ResponseEntity<ResponseDto<List<GroupResponseDto?>>> {
+
+        val groups: List<GroupResponseDto> = repository.findAll()
+            .map { GroupResponseDto(id = it.id!!, it.name) }
+
+        return ResponseEntity.ok().
+        body(
+            ResponseDto(
+                code = HttpStatus.OK.value(),
+                data = groups,
+                message = "Group found!"
+            )
+        )
+
+    }
+
+    fun update(groupRequest: GroupUpdateRequestDto) : ResponseEntity<ResponseDto<GroupResponseDto?>> {
+
+        val group: Group = repository.findByIdOrNull(groupRequest.id)
+            ?: return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(ResponseDto(
+                    HttpStatus.NOT_FOUND.value(),
+                    message = "Group not found!",
+                    data = null)
+                )
+        group.name = groupRequest.name
+        repository.save(group)
+
+        return ResponseEntity
+            .ok(
+                ResponseDto(
+                    code = HttpStatus.OK.value(),
+                    message = "Group Updated",
+                    data = GroupResponseDto(id = groupRequest.id, name = groupRequest.name),
+                    )
+            )
+    }
+
+
 }

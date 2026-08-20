@@ -21,13 +21,25 @@ class GroupController(private val groupService: GroupService) {
     @PostMapping("api/group/save")
     @PreAuthorize("hasAuthority('GROUP_CREATE')")
     fun save(@Valid @RequestBody groupRequest: GroupRequestDto) : ResponseEntity<ResponseDto<GroupResponseDto>> {
-        return groupService.save(groupRequest);
+        return groupService.save(groupRequest)
     }
 
     @GetMapping("api/group/{id}")
     @PreAuthorize("hasAuthority('GROUP_CREATE')")
     fun findById(@PathVariable id: Long) : ResponseEntity<ResponseDto<GroupResponseDto?>> {
-        return groupService.get(id);
+        return groupService.get(id)
+    }
+
+    @GetMapping("api/group/")
+    @PreAuthorize("hasAuthority('GROUP_GET_ALL')")
+    fun getAll() : ResponseEntity<ResponseDto<List<GroupResponseDto?>>>  {
+        return groupService.getAll()
+    }
+
+    @PutMapping("api/group/update")
+    @PreAuthorize("hasAuthority('GROUP_UPDATE')")
+    fun update(@RequestBody requestGroup: GroupUpdateRequestDto) : ResponseEntity<ResponseDto<GroupResponseDto?>> {
+        return groupService.update(requestGroup)
     }
 
 }
