@@ -7,6 +7,7 @@ import com.joaovictorcostadev.pequi_short.dto.response.ResponseDto
 import com.joaovictorcostadev.pequi_short.entity.Group
 import com.joaovictorcostadev.pequi_short.repository.GroupRepository
 import org.springframework.data.repository.findByIdOrNull
+import org.springframework.http.HttpEntity
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
@@ -87,5 +88,23 @@ class GroupService(val repository: GroupRepository) {
             )
     }
 
+    fun delete(id: Long) : ResponseEntity<ResponseDto<GroupResponseDto?>> {
+        val group: Group = repository.findByIdOrNull(id)
+            ?: return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(ResponseDto(
+                    code = HttpStatus.NOT_FOUND.value(),
+                    data = null,
+                    message = "")
+                )
+        repository.delete(group)
+
+        return ResponseEntity.ok()
+            .body(
+                ResponseDto(
+                    code = HttpStatus.OK.value(),
+                    data = GroupResponseDto(id = group.id!!, name = group.name),
+                    message = "Group deleted!")
+            )
+    }
 
 }

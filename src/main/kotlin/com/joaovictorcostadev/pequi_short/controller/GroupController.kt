@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RestController
 import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
+import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PutMapping
@@ -40,6 +41,12 @@ class GroupController(private val groupService: GroupService) {
     @PreAuthorize("hasAuthority('GROUP_UPDATE')")
     fun update(@RequestBody requestGroup: GroupUpdateRequestDto) : ResponseEntity<ResponseDto<GroupResponseDto?>> {
         return groupService.update(requestGroup)
+    }
+
+    @DeleteMapping("api/group/delete/{id}")
+    @PreAuthorize("hasAuthority('GROUP_DELETE')")
+    fun delete(@PathVariable id: Long) : ResponseEntity<ResponseDto<GroupResponseDto?>> {
+        return groupService.delete(id)
     }
 
 }

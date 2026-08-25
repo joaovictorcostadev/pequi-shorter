@@ -19,7 +19,7 @@ data class Rule(
     val id: Long? = null,
 
     @Column("name")
-    val name: String,
+    var name: String,
 
     @OneToMany(mappedBy = "rule", cascade = [CascadeType.ALL], orphanRemoval = true)
     val groupRules: MutableSet<GroupRule> = mutableSetOf()

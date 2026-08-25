@@ -12,3 +12,8 @@ data class RuleResponseDto(
     val id: Long,
     val name: String,
 )
+
+data class RuleUpdateRequestDto(
+    val id: Long,
+    val name: String,
+)

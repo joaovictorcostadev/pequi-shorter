@@ -40,6 +40,11 @@ class InitialDataSeeder(
             Rule(name = "GROUP_CREATE"),
             Rule(name = "GROUP_UPDATE"),
             Rule(name = "GROUP_DELETE"),
+            Rule(name = "RULE_GET"),
+            Rule(name = "RULE_GET_ALL"),
+            Rule(name = "RULE_CREATE"),
+            Rule(name = "RULE_UPDATE"),
+            Rule(name = "RULE_DELETE"),
             ))
 
         val  userRules: List<String> = listOf<String>(
@@ -65,6 +70,11 @@ class InitialDataSeeder(
             "GROUP_CREATE",
             "GROUP_UPDATE",
             "GROUP_DELETE",
+            "RULE_GET",
+            "RULE_GET_ALL",
+            "RULE_CREATE",
+            "RULE_UPDATE",
+            "RULE_DELETE",
         )
 
         for (rule in rules) {
