@@ -18,18 +18,18 @@ data class Url(
     val id:Long? = null,
 
     @Column(unique = true, nullable = false)
-    val name: String,
+    var name: String,
 
     @Column(name="external_url", nullable = false)
-    val externalUrl: String,
+    var externalUrl: String,
 
     @Column(name = "created_at")
-    val createdAt: Instant = Instant.now(),
+    var createdAt: Instant = Instant.now(),
 
     @Column(name = "updated_at")
-    val updatedAt: Instant,
+    var updatedAt: Instant,
 
     @ManyToOne
     @JoinColumn(name = "user_id")
-    val user:User
+    var user:User
 )

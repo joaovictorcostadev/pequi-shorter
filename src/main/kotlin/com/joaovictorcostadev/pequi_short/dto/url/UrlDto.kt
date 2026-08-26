@@ -5,16 +5,15 @@ import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.NotNull
 
 data class UrlDtoRequest(
-    @NotBlank(message = "name is required!")
-    val name: String,
+    var name: String?,
 
     @NotBlank(message = "external_url is required!")
     @JsonProperty("external_url")
-    val externalUrl: String,
+    var externalUrl: String,
 
     @NotNull(message = "user_id is required!")
     @JsonProperty("user_id")
-    val userId: Long,
+    var userId: Long,
 
 )
 

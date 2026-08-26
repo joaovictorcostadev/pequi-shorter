@@ -1,5 +1,6 @@
 package com.joaovictorcostadev.pequi_short.service
 
+import com.joaovictorcostadev.pequi_short.component.UniqueCodeGenerator
 import com.joaovictorcostadev.pequi_short.dto.geoip.GeoIpDto
 import com.joaovictorcostadev.pequi_short.dto.response.ResponseDto
 import com.joaovictorcostadev.pequi_short.dto.url.UrlAccessDTO
@@ -31,6 +32,7 @@ class UrlService(
     val userAuthenticated: UserAuthenticated,
     val geoIpService: GeoIpService,
     val urlAccessService: UrlAccessService,
+    val uniqueCodeGenerator: UniqueCodeGenerator,
 
 
     @Value($$"${host.name}")
@@ -62,7 +64,9 @@ class UrlService(
                 )
         }
 
-        val urlExist: Url? = repository.findByName(urlDtoRequest.name)
+        urlDtoRequest.name = urlDtoRequest.name ?: uniqueCodeGenerator.getUniqueCode(8)
+
+        val urlExist: Url? = repository.findByName(urlDtoRequest.name!!)
 
         if(urlExist != null) {
             return ResponseEntity
@@ -75,7 +79,7 @@ class UrlService(
         }
 
         val savedUrl = repository.save(Url(
-            name = urlDtoRequest.name,
+            name = urlDtoRequest.name!!,
             externalUrl = urlDtoRequest.externalUrl,
             createdAt = Instant.now(),
             updatedAt = Instant.now(),
