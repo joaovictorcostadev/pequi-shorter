@@ -3,6 +3,7 @@ package com.joaovictorcostadev.pequi_short.service
 import com.joaovictorcostadev.pequi_short.dto.response.ResponseDto
 import com.joaovictorcostadev.pequi_short.dto.user.UserAuthRequestDto
 import com.joaovictorcostadev.pequi_short.dto.user.UserAuthResponseDto
+import com.joaovictorcostadev.pequi_short.dto.user.UserRefreshRequestDto
 import com.joaovictorcostadev.pequi_short.dto.user.UserRequestDto
 import com.joaovictorcostadev.pequi_short.dto.user.UserResponseDto
 import com.joaovictorcostadev.pequi_short.dto.user.UserUpdateResponseDto
@@ -33,6 +34,7 @@ class UserService(
     private val userDetailsService: CustomUserDetailsService,
     private val tokenService: TokenService,
     private val authenticatorManager: AuthenticationManager,
+    private val refreshTokenService: RefreshTokenService,
 
     @Value($$"${jwt.expiration}")
     private val expiration: Long
@@ -170,6 +172,7 @@ class UserService(
 
         val userDetails = userDetailsService.loadUserByUsername(userAuthRequest.email)
         val token = tokenService.generateToken(userDetails)
+        val refresh = refreshTokenService.generateToken(userDetails)
 
         val cookie: ResponseCookie = ResponseCookie.from(
             "token", token)
@@ -184,13 +187,18 @@ class UserService(
                 ResponseDto(
                 code = HttpStatus.OK.value(),
                 message = "Authorized",
-                data = UserAuthResponseDto(
-                token = token,
-                iat = System.currentTimeMillis(),
-                exp = System.currentTimeMillis() + expiration)
+                    data = UserAuthResponseDto(
+                        token = token,
+                        refresh = refresh,
+                        iat = System.currentTimeMillis(),
+                        exp = System.currentTimeMillis() + expiration)
+
                 )
             )
 
     }
 
+    fun refresh(userRefreshRequestDto: UserRefreshRequestDto) {
+
+    }
 }
