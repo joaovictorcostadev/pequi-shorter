@@ -47,3 +47,8 @@ data class UserUpdateResponseDto(
 data class UserRefreshRequestDto(
     val token: String,
 )
+
+data class UserRefreshResponseDto(
+    @JsonProperty("access_token")
+    val accessToken: String,
+)

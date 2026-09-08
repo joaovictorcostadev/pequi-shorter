@@ -4,9 +4,11 @@ import com.joaovictorcostadev.pequi_short.dto.response.ResponseDto
 import com.joaovictorcostadev.pequi_short.dto.user.UserAuthRequestDto
 import com.joaovictorcostadev.pequi_short.dto.user.UserAuthResponseDto
 import com.joaovictorcostadev.pequi_short.dto.user.UserRefreshRequestDto
+import com.joaovictorcostadev.pequi_short.dto.user.UserRefreshResponseDto
 import com.joaovictorcostadev.pequi_short.dto.user.UserRequestDto
 import com.joaovictorcostadev.pequi_short.dto.user.UserResponseDto
 import com.joaovictorcostadev.pequi_short.dto.user.UserUpdateResponseDto
+import com.joaovictorcostadev.pequi_short.entity.RefreshToken
 import com.joaovictorcostadev.pequi_short.repository.UserRepository
 import org.springframework.stereotype.Service
 import com.joaovictorcostadev.pequi_short.entity.User
@@ -20,7 +22,9 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseCookie
 import org.springframework.http.ResponseEntity
 import org.springframework.security.authentication.AuthenticationManager
+import org.springframework.security.authentication.BadCredentialsException
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
+import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.security.crypto.password.PasswordEncoder
 import java.time.Instant
 
@@ -165,7 +169,7 @@ class UserService(
 
     }
 
-    fun auth(userAuthRequest: UserAuthRequestDto) : ResponseEntity<ResponseDto<UserAuthResponseDto>> {
+    fun auth(userAuthRequest: UserAuthRequestDto) : ResponseEntity<ResponseDto<UserAuthResponseDto?>> {
         authenticatorManager.authenticate(
             UsernamePasswordAuthenticationToken(userAuthRequest.email, userAuthRequest.password)
         )
@@ -173,13 +177,21 @@ class UserService(
         val userDetails = userDetailsService.loadUserByUsername(userAuthRequest.email)
         val token = tokenService.generateToken(userDetails)
         val refresh = refreshTokenService.generateToken(userDetails)
-
+        val user: User? = repository.findByEmail(userAuthRequest.email)
         val cookie: ResponseCookie = ResponseCookie.from(
             "token", token)
             .httpOnly(true)
             .path("/")
             .maxAge(expiration / 1000)
             .build()
+
+        val savedRefreshToken = handlingRefreshToken(user, refresh) ?: return ResponseEntity.internalServerError().body(
+            ResponseDto(
+                code = HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                data = null,
+                message = "Server Error"
+            )
+        )
 
         return ResponseEntity.ok()
             .header(HttpHeaders.SET_COOKIE, cookie.toString())
@@ -189,7 +201,7 @@ class UserService(
                 message = "Authorized",
                     data = UserAuthResponseDto(
                         token = token,
-                        refresh = refresh,
+                        refresh = savedRefreshToken!!,
                         iat = System.currentTimeMillis(),
                         exp = System.currentTimeMillis() + expiration)
 
@@ -198,7 +210,43 @@ class UserService(
 
     }
 
-    fun refresh(userRefreshRequestDto: UserRefreshRequestDto) {
+    fun refreshToken(userRefreshRequestDto: UserRefreshRequestDto) : ResponseEntity<ResponseDto<UserRefreshResponseDto?>> {
+        val refreshTokenSaved: RefreshToken? = refreshTokenService.getRefreshTokenByToken(userRefreshRequestDto.token) ?:  return ResponseEntity.badRequest().body(
+            ResponseDto(
+                code = HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                data = null,
+                message = "Token not found!")
+        )
 
+        if(refreshTokenSaved!!.revokeAt.isAfter(Instant.now())) {
+            throw BadCredentialsException("Unable to refresh token")
+        }
+
+        return ResponseEntity.ok()
+            .body(
+                ResponseDto(
+                    code = HttpStatus.OK.value(),
+                    data = UserRefreshResponseDto(refreshTokenSaved.token),
+                    message = "Token refreshed!"
+                )
+            )
+    }
+
+    fun handlingRefreshToken(
+        user: User?,
+        refreshToken: String
+    ): String? {
+
+        user ?: return null
+
+        val lastRefreshToken = refreshTokenService.getRefreshToken(user)
+
+        if (lastRefreshToken?.revokeAt?.isAfter(Instant.now()) == true) {
+            return lastRefreshToken.token
+        }
+
+        refreshTokenService.saveRefreshToken(user, refreshToken)
+
+        return refreshToken
     }
 }

@@ -3,6 +3,8 @@ package com.joaovictorcostadev.pequi_short.controller
 import com.joaovictorcostadev.pequi_short.dto.response.ResponseDto
 import com.joaovictorcostadev.pequi_short.dto.user.UserAuthRequestDto
 import com.joaovictorcostadev.pequi_short.dto.user.UserAuthResponseDto
+import com.joaovictorcostadev.pequi_short.dto.user.UserRefreshRequestDto
+import com.joaovictorcostadev.pequi_short.dto.user.UserRefreshResponseDto
 import com.joaovictorcostadev.pequi_short.dto.user.UserRequestDto
 import com.joaovictorcostadev.pequi_short.dto.user.UserResponseDto
 import com.joaovictorcostadev.pequi_short.dto.user.UserUpdateResponseDto
@@ -38,10 +40,15 @@ class UserController(
     }
 
     @PostMapping("api/user/auth/login")
-    fun auth(@Valid @RequestBody userAuthRequest: UserAuthRequestDto) : ResponseEntity<ResponseDto<UserAuthResponseDto>> {
-
+    fun auth(@Valid @RequestBody userAuthRequest: UserAuthRequestDto) : ResponseEntity<ResponseDto<UserAuthResponseDto?>> {
         return  userService.auth(userAuthRequest)
     }
+
+    @PostMapping("api/user/auth/refresh")
+    fun refreshToken(@Valid @RequestBody userRefreshRequestDto: UserRefreshRequestDto) : ResponseEntity<ResponseDto<UserRefreshResponseDto?>> {
+        return  userService.refreshToken(userRefreshRequestDto)
+    }
+
 
     @PreAuthorize("hasAuthority('USER_GET')")
     @GetMapping("api/user/{id}")
