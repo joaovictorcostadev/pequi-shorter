@@ -1,36 +1,38 @@
 package com.joaovictorcostadev.pequi_short.entity
 
-import jakarta.persistence.Column
-import jakarta.persistence.Entity
-import jakarta.persistence.GeneratedValue
-import jakarta.persistence.GenerationType
-import jakarta.persistence.Id
-import jakarta.persistence.JoinColumn
-import jakarta.persistence.ManyToOne
-import jakarta.persistence.Table
+import jakarta.persistence.*
 import java.time.Instant
 
 @Entity
-@Table(name = "refresh_tokens")
-data class RefreshToken(
-
-    @Column(unique = true)
+@Table(
+    name = "refresh_tokens",
+    indexes = [Index(name = "idx_refresh_token", columnList = "token", unique = true)]
+)
+class RefreshToken(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    val id:Long? = null,
+    val id: Long? = null,
 
-    @ManyToOne
-    @JoinColumn(name = "user_id")
-    val userId: User,
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    val user: User,
 
-    @Column(name = "token", nullable = false)
+    @Column(name = "token", nullable = false, unique = true)
     var token: String,
 
-    @Column(name = "created_at")
-    var createdAt: Instant = Instant.now(),
+    @Column(name = "created_at", nullable = false, updatable = false)
+    val createdAt: Instant = Instant.now(),
 
+    @Column(name = "revoke_at", nullable = false)
+    var revokeAt: Instant
+) {
+    fun isExpired(): Boolean = Instant.now().isAfter(revokeAt)
 
-    @Column(name = "revoke_at")
-    val revokeAt: Instant
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is RefreshToken) return false
+        return id != null && id == other.id
+    }
 
-)
+    override fun hashCode(): Int = id?.hashCode() ?: 31
+}

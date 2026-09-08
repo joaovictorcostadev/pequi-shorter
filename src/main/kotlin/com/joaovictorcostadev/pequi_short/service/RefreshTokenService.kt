@@ -77,7 +77,7 @@ class RefreshTokenService (
 
         val token: RefreshToken = RefreshToken(
             token = refreshToken,
-            userId = user,
+            user = user,
             revokeAt = Instant.now().plus(15, ChronoUnit.DAYS)
         )
 

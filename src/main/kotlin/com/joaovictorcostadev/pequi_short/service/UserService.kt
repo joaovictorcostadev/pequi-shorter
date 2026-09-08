@@ -22,10 +22,9 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseCookie
 import org.springframework.http.ResponseEntity
 import org.springframework.security.authentication.AuthenticationManager
-import org.springframework.security.authentication.BadCredentialsException
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
-import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.security.crypto.password.PasswordEncoder
+import org.springframework.transaction.annotation.Transactional
 import java.time.Instant
 
 
@@ -45,6 +44,7 @@ class UserService(
 
 ) {
 
+    @Transactional
     fun save(user: UserRequestDto) : ResponseEntity<ResponseDto<UserResponseDto>> {
         val group = groupRepository.findById(user.groupId).orElseThrow{
             RuntimeException("Group not found!")
@@ -101,6 +101,7 @@ class UserService(
             )
     }
 
+    @Transactional
     fun update(body: UserUpdateResponseDto, id:Long) : ResponseEntity<ResponseDto<UserResponseDto?>> {
         val user:User? = repository.findByIdOrNull(id)
         val loggedUser = repository.findByEmail(userAuthenticated.getUsernameLogged())
@@ -145,6 +146,7 @@ class UserService(
 
     }
 
+    @Transactional
     fun delete(id: Long) : ResponseEntity<ResponseDto<UserResponseDto?>> {
         val user: User = repository.findByIdOrNull(id) ?: return ResponseEntity
             .badRequest().body(
@@ -169,6 +171,7 @@ class UserService(
 
     }
 
+    @Transactional
     fun auth(userAuthRequest: UserAuthRequestDto) : ResponseEntity<ResponseDto<UserAuthResponseDto?>> {
         authenticatorManager.authenticate(
             UsernamePasswordAuthenticationToken(userAuthRequest.email, userAuthRequest.password)
@@ -201,7 +204,7 @@ class UserService(
                 message = "Authorized",
                     data = UserAuthResponseDto(
                         token = token,
-                        refresh = savedRefreshToken!!,
+                        refresh = savedRefreshToken,
                         iat = System.currentTimeMillis(),
                         exp = System.currentTimeMillis() + expiration)
 
@@ -210,24 +213,34 @@ class UserService(
 
     }
 
+    @Transactional
     fun refreshToken(userRefreshRequestDto: UserRefreshRequestDto) : ResponseEntity<ResponseDto<UserRefreshResponseDto?>> {
-        val refreshTokenSaved: RefreshToken? = refreshTokenService.getRefreshTokenByToken(userRefreshRequestDto.token) ?:  return ResponseEntity.badRequest().body(
+        val refreshTokenSaved: RefreshToken = refreshTokenService.getRefreshTokenByToken(userRefreshRequestDto.token) ?:
+        return ResponseEntity.badRequest().body(
             ResponseDto(
                 code = HttpStatus.INTERNAL_SERVER_ERROR.value(),
                 data = null,
                 message = "Token not found!")
         )
 
-        if(refreshTokenSaved!!.revokeAt.isAfter(Instant.now())) {
-            throw BadCredentialsException("Unable to refresh token")
+        if(refreshTokenSaved.isExpired()) {
+           return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
+                ResponseDto(
+                    code = HttpStatus.FORBIDDEN.value(),
+                    data = null,
+                    message = "Refresh token expired! Please you need make a new auth.")
+            )
         }
+
+        val userDetails = userDetailsService.loadUserByUsername(refreshTokenService.extractUsername(userRefreshRequestDto.token))
+        val accessToken = tokenService.generateToken(userDetails)
 
         return ResponseEntity.ok()
             .body(
                 ResponseDto(
                     code = HttpStatus.OK.value(),
-                    data = UserRefreshResponseDto(refreshTokenSaved.token),
-                    message = "Token refreshed!"
+                    data = UserRefreshResponseDto(accessToken),
+                    message = "Access Token refreshed!"
                 )
             )
     }
