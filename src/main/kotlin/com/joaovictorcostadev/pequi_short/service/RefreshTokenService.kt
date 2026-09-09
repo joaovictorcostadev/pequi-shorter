@@ -4,6 +4,7 @@ import com.joaovictorcostadev.pequi_short.dto.user.UserRefreshRequestDto
 import com.joaovictorcostadev.pequi_short.entity.RefreshToken
 import com.joaovictorcostadev.pequi_short.entity.User
 import com.joaovictorcostadev.pequi_short.repository.RefreshTokenRepository
+import com.joaovictorcostadev.pequi_short.util.hash
 import io.jsonwebtoken.Claims
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.security.Keys
@@ -68,7 +69,7 @@ class RefreshTokenService (
     }
 
     fun getRefreshTokenByToken(token: String) : RefreshToken? {
-        val refreshToken: MutableList<RefreshToken> = repository.findByToken(token)
+        val refreshToken: MutableList<RefreshToken> = repository.findByToken(token.hash())
         if(refreshToken.isEmpty()) return null
         return refreshToken.first();
     }
@@ -76,7 +77,7 @@ class RefreshTokenService (
     fun saveRefreshToken(user: User, refreshToken: String) : UserRefreshRequestDto? {
 
         val token: RefreshToken = RefreshToken(
-            token = refreshToken,
+            token = refreshToken.hash(),
             user = user,
             revokeAt = Instant.now().plus(15, ChronoUnit.DAYS)
         )

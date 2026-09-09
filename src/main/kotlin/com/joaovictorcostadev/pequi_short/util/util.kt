@@ -1,9 +1,14 @@
 package com.joaovictorcostadev.pequi_short.util
 
 import jakarta.servlet.http.HttpServletRequest
+import org.bouncycastle.crypto.digests.SHA256Digest
+import org.bouncycastle.jcajce.provider.digest.MD5
+import org.bouncycastle.util.Bytes
+import org.bouncycastle.util.encoders.Hex
+import java.security.MessageDigest
 
 /**
- * Retorna o IP real do cliente tratando cenários com e sem proxies (Cloudflare, Nginx, Load Balancers).
+ * Return Ip (Cloudflare, Nginx, Load Balancers).
  */
 fun HttpServletRequest.getClientIp(): String {
     val xForwardedFor = this.getHeader("X-Forwarded-For")
@@ -16,7 +21,7 @@ fun HttpServletRequest.getClientIp(): String {
 }
 
 /**
- * Retornar o Browser
+ * Return browser
  */
 fun HttpServletRequest.getBrowser(): String {
     val userAgent: String = this.getHeader("User-Agent")
@@ -25,7 +30,7 @@ fun HttpServletRequest.getBrowser(): String {
 }
 
 /**
- * Retornar o Sistema Operacional
+ * Return SO
  */
 fun HttpServletRequest.getOs(): String {
     val userAgent = this.getHeader("User-Agent") ?: return "Unknown"
@@ -43,7 +48,7 @@ fun HttpServletRequest.getOs(): String {
     }
 }
 /**
- * Retorna o tipo do dispositivo.
+ * Return device type
  */
 fun HttpServletRequest.getDeviceType(): String {
     val userAgent = this.getHeader("User-Agent") ?: return "Unknown"
@@ -62,4 +67,13 @@ fun HttpServletRequest.getDeviceType(): String {
 
         else -> "Unknown"
     }
+}
+
+/**
+ * Hashing some string
+ */
+fun String.hash() : String {
+    val digest = MessageDigest.getInstance("SHA-256")
+    val bytes = digest.digest(toByteArray())
+    return bytes.joinToString("") { "%02x".format(it) }
 }

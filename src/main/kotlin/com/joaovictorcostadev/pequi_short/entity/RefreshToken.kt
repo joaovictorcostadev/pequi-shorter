@@ -6,7 +6,6 @@ import java.time.Instant
 @Entity
 @Table(
     name = "refresh_tokens",
-    indexes = [Index(name = "idx_refresh_token", columnList = "token", unique = true)]
 )
 class RefreshToken(
     @Id
