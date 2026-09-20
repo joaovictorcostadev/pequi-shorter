@@ -33,8 +33,8 @@ class RefreshTokenService (
     }
 
     fun generateToken(userDetails: UserDetails): String {
-        val hash: String = "${userDetails.username} + ${Instant.now().epochSecond} + ${key.toString()}"
-        return hash;
+        val strHash: String = "${userDetails.username}${Instant.now().epochSecond}${key.toString()}".hash()
+        return strHash;
     }
 
     fun getRefreshTokenByUserId(user: User) : RefreshToken? {

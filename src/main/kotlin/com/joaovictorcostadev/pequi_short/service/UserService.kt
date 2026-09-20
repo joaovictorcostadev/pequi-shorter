@@ -3,6 +3,7 @@ package com.joaovictorcostadev.pequi_short.service
 import com.joaovictorcostadev.pequi_short.dto.response.ResponseDto
 import com.joaovictorcostadev.pequi_short.dto.user.UserAuthRequestDto
 import com.joaovictorcostadev.pequi_short.dto.user.UserAuthResponseDto
+import com.joaovictorcostadev.pequi_short.dto.user.UserLogoutRequest
 import com.joaovictorcostadev.pequi_short.dto.user.UserRefreshRequestDto
 import com.joaovictorcostadev.pequi_short.dto.user.UserRefreshResponseDto
 import com.joaovictorcostadev.pequi_short.dto.user.UserRequestDto
@@ -213,6 +214,25 @@ class UserService(
                 )
             )
 
+    }
+
+    @Transactional
+    fun logout(userLogoutRequest: UserLogoutRequest) : ResponseEntity<ResponseDto<String?>> {
+
+        val refreshToken: RefreshToken = refreshTokenService.getRefreshTokenByToken(userLogoutRequest.refreshToken) ?:
+        return ResponseEntity
+            .badRequest().
+            body(
+                ResponseDto(
+                    code = HttpStatus.BAD_REQUEST.value(),
+                    data = null,
+                    message = "User not found!"
+                )
+            )
+
+        refreshTokenService.revokeRefreshTokens(listOf(refreshToken))
+
+        return ResponseEntity.noContent().build()
     }
 
     @Transactional

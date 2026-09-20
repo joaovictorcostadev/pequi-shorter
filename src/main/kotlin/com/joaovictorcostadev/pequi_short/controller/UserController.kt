@@ -3,6 +3,7 @@ package com.joaovictorcostadev.pequi_short.controller
 import com.joaovictorcostadev.pequi_short.dto.response.ResponseDto
 import com.joaovictorcostadev.pequi_short.dto.user.UserAuthRequestDto
 import com.joaovictorcostadev.pequi_short.dto.user.UserAuthResponseDto
+import com.joaovictorcostadev.pequi_short.dto.user.UserLogoutRequest
 import com.joaovictorcostadev.pequi_short.dto.user.UserRefreshRequestDto
 import com.joaovictorcostadev.pequi_short.dto.user.UserRefreshResponseDto
 import com.joaovictorcostadev.pequi_short.dto.user.UserRequestDto
@@ -42,6 +43,11 @@ class UserController(
     @PostMapping("api/user/auth/login")
     fun auth(@Valid @RequestBody userAuthRequest: UserAuthRequestDto) : ResponseEntity<ResponseDto<UserAuthResponseDto?>> {
         return  userService.auth(userAuthRequest)
+    }
+
+    @PostMapping("api/user/auth/logout")
+    fun logout(@Valid @RequestBody userLogoutRequest: UserLogoutRequest) : ResponseEntity<ResponseDto<String?>> {
+        return userService.logout(userLogoutRequest)
     }
 
     @PostMapping("api/user/auth/refresh")
