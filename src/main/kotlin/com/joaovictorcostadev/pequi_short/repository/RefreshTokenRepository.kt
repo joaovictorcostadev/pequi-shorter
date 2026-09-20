@@ -6,5 +6,5 @@ import org.springframework.data.jpa.repository.JpaRepository
 interface  RefreshTokenRepository : JpaRepository<RefreshToken, Long> {
 
     fun findFirstByUserId_IdOrderByIdDesc(userId: Long): RefreshToken?
-    fun findByToken(token: String): MutableList<RefreshToken>
+    fun findByToken(token: String): RefreshToken?
 }

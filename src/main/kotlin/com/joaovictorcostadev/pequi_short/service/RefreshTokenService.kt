@@ -11,6 +11,7 @@ import io.jsonwebtoken.security.Keys
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import java.time.Instant
 import java.time.temporal.ChronoUnit
 import java.util.Date
@@ -32,46 +33,18 @@ class RefreshTokenService (
     }
 
     fun generateToken(userDetails: UserDetails): String {
-        return Jwts.builder()
-            .header()
-            .type("JWT")
-            .and()
-            .subject(userDetails.username)
-            .issuedAt(Date(System.currentTimeMillis()))
-            .expiration(Date(System.currentTimeMillis() + expiration))
-            .signWith(key)
-            .compact()
+        val hash: String = "${userDetails.username} + ${Instant.now().epochSecond} + ${key.toString()}"
+        return hash;
     }
 
-
-    fun getClaims(token: String) : Claims {
-        return Jwts.parser()
-            .verifyWith(key)
-            .build()
-            .parseSignedClaims(token)
-            .payload
-    }
-
-    fun extractUsername(token: String) : String {
-        return getClaims(token).subject
-    }
-
-    fun isTokenValid(token: String, userDetails: UserDetails) : Boolean {
-        val username: String = extractUsername(token)
-        val expiration = getClaims(token).expiration
-
-        return username == userDetails.username && expiration.after(Date())
-    }
-
-    fun getRefreshToken(user: User) : RefreshToken? {
+    fun getRefreshTokenByUserId(user: User) : RefreshToken? {
         val refreshToken: RefreshToken? = repository.findFirstByUserId_IdOrderByIdDesc(user.id!!)
         return refreshToken
     }
 
     fun getRefreshTokenByToken(token: String) : RefreshToken? {
-        val refreshToken: MutableList<RefreshToken> = repository.findByToken(token.hash())
-        if(refreshToken.isEmpty()) return null
-        return refreshToken.first();
+        val refreshToken: RefreshToken =  repository.findByToken(token.hash()) ?: return null
+        return refreshToken;
     }
 
     fun saveRefreshToken(user: User, refreshToken: String) : UserRefreshRequestDto? {
@@ -84,6 +57,19 @@ class RefreshTokenService (
 
         val savedRefreshToken: RefreshToken = repository.save(token)
 
-        return UserRefreshRequestDto(token = savedRefreshToken.token)
+        return UserRefreshRequestDto(refreshToken = savedRefreshToken.token)
+    }
+
+    @Transactional
+    fun revokeRefreshTokens(refreshTokens: List<RefreshToken>) {
+            if(refreshTokens.isEmpty()) return
+
+            val revokedAt = Instant.now()
+
+            refreshTokens.forEach {
+                it.revokeAt = revokedAt
+            }
+
+            repository.saveAll(refreshTokens)
     }
 }

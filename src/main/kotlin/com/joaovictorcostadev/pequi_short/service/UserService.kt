@@ -15,6 +15,7 @@ import com.joaovictorcostadev.pequi_short.entity.User
 import com.joaovictorcostadev.pequi_short.enum.GroupEnum
 import com.joaovictorcostadev.pequi_short.repository.GroupRepository
 import com.joaovictorcostadev.pequi_short.security.UserAuthenticated
+import com.joaovictorcostadev.pequi_short.util.hash
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.http.HttpHeaders
@@ -23,6 +24,7 @@ import org.springframework.http.ResponseCookie
 import org.springframework.http.ResponseEntity
 import org.springframework.security.authentication.AuthenticationManager
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
+import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.transaction.annotation.Transactional
 import java.time.Instant
@@ -192,7 +194,7 @@ class UserService(
             ResponseDto(
                 code = HttpStatus.INTERNAL_SERVER_ERROR.value(),
                 data = null,
-                message = "Server Error"
+                message = "Server Error - Refresh Token not configured!"
             )
         )
 
@@ -215,7 +217,7 @@ class UserService(
 
     @Transactional
     fun refreshToken(userRefreshRequestDto: UserRefreshRequestDto) : ResponseEntity<ResponseDto<UserRefreshResponseDto?>> {
-        val refreshTokenSaved: RefreshToken = refreshTokenService.getRefreshTokenByToken(userRefreshRequestDto.token) ?:
+        val refreshTokenSaved: RefreshToken = refreshTokenService.getRefreshTokenByToken(userRefreshRequestDto.refreshToken) ?:
         return ResponseEntity.badRequest().body(
             ResponseDto(
                 code = HttpStatus.INTERNAL_SERVER_ERROR.value(),
@@ -232,14 +234,14 @@ class UserService(
             )
         }
 
-        val userDetails = userDetailsService.loadUserByUsername(refreshTokenService.extractUsername(userRefreshRequestDto.token))
+        val userDetails: UserDetails = userDetailsService.loadUserByUsername(refreshTokenSaved.user.email)
         val accessToken = tokenService.generateToken(userDetails)
 
         return ResponseEntity.ok()
             .body(
                 ResponseDto(
                     code = HttpStatus.OK.value(),
-                    data = UserRefreshResponseDto(accessToken),
+                    data = UserRefreshResponseDto(accessToken =  accessToken, refreshToken =  userRefreshRequestDto.refreshToken),
                     message = "Access Token refreshed!"
                 )
             )
@@ -251,12 +253,6 @@ class UserService(
     ): String? {
 
         user ?: return null
-
-        val lastRefreshToken = refreshTokenService.getRefreshToken(user)
-
-        if (lastRefreshToken?.revokeAt?.isAfter(Instant.now()) == true) {
-            return lastRefreshToken.token
-        }
 
         refreshTokenService.saveRefreshToken(user, refreshToken)
 

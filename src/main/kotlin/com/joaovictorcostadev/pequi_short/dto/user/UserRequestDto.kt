@@ -34,6 +34,7 @@ data class UserAuthRequestDto(
 
 data class UserAuthResponseDto(
     val token: String,
+    @JsonProperty("refresh_token")
     val refresh: String,
     val exp: Long,
     val iat: Long,
@@ -45,10 +46,21 @@ data class UserUpdateResponseDto(
 )
 
 data class UserRefreshRequestDto(
-    val token: String,
+    @JsonProperty(value = "refresh_token")
+    @NotBlank(message = "refresh_token is required!")
+    val refreshToken: String,
 )
 
 data class UserRefreshResponseDto(
     @JsonProperty("access_token")
     val accessToken: String,
+
+    @JsonProperty(value = "refresh_token")
+    val refreshToken: String,
+)
+
+data class UserLogoutRequest(
+    @NotBlank(message = "refresh_token is required!")
+    @JsonProperty(value = "refresh_token")
+    val refreshToken: String,
 )
