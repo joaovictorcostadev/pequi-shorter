@@ -37,11 +37,6 @@ class RefreshTokenService (
         return strHash;
     }
 
-    fun getRefreshTokenByUserId(user: User) : RefreshToken? {
-        val refreshToken: RefreshToken? = repository.findFirstByUserId_IdOrderByIdDesc(user.id!!)
-        return refreshToken
-    }
-
     fun getRefreshTokenByToken(token: String) : RefreshToken? {
         val refreshToken: RefreshToken =  repository.findByToken(token.hash()) ?: return null
         return refreshToken;
@@ -57,7 +52,7 @@ class RefreshTokenService (
 
         val savedRefreshToken: RefreshToken = repository.save(token)
 
-        return UserRefreshRequestDto(refreshToken = savedRefreshToken.token)
+        return UserRefreshRequestDto(refreshToken = refreshToken)
     }
 
     @Transactional

@@ -230,6 +230,15 @@ class UserService(
                 )
             )
 
+        if(refreshToken.isExpired()) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
+                ResponseDto(
+                    code = HttpStatus.FORBIDDEN.value(),
+                    data = null,
+                    message = "Refresh token expired! Please you need make a new auth.")
+            )
+        }
+
         refreshTokenService.revokeRefreshTokens(listOf(refreshToken))
 
         return ResponseEntity.noContent().build()
@@ -237,7 +246,7 @@ class UserService(
 
     @Transactional
     fun refreshToken(userRefreshRequestDto: UserRefreshRequestDto) : ResponseEntity<ResponseDto<UserRefreshResponseDto?>> {
-        val refreshTokenSaved: RefreshToken = refreshTokenService.getRefreshTokenByToken(userRefreshRequestDto.refreshToken) ?:
+        val lastRefreshToken: RefreshToken = refreshTokenService.getRefreshTokenByToken(userRefreshRequestDto.refreshToken) ?:
         return ResponseEntity.badRequest().body(
             ResponseDto(
                 code = HttpStatus.INTERNAL_SERVER_ERROR.value(),
@@ -245,7 +254,7 @@ class UserService(
                 message = "Token not found!")
         )
 
-        if(refreshTokenSaved.isExpired()) {
+        if(lastRefreshToken.isExpired()) {
            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
                 ResponseDto(
                     code = HttpStatus.FORBIDDEN.value(),
@@ -254,14 +263,21 @@ class UserService(
             )
         }
 
-        val userDetails: UserDetails = userDetailsService.loadUserByUsername(refreshTokenSaved.user.email)
+        val userDetails: UserDetails = userDetailsService.loadUserByUsername(lastRefreshToken.user.email)
         val accessToken = tokenService.generateToken(userDetails)
+
+        // Create a new refresh token
+        val newRefreshToken: UserRefreshRequestDto = refreshTokenService.saveRefreshToken(lastRefreshToken.user, refreshTokenService.generateToken(userDetails)) ?:
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ResponseDto(code = HttpStatus.INTERNAL_SERVER_ERROR.value(), data = null, message = "Token not generated!"))
+
+        // Revoke a lastRefreshToken
+        refreshTokenService.revokeRefreshTokens(listOf(lastRefreshToken))
 
         return ResponseEntity.ok()
             .body(
                 ResponseDto(
                     code = HttpStatus.OK.value(),
-                    data = UserRefreshResponseDto(accessToken =  accessToken, refreshToken =  userRefreshRequestDto.refreshToken),
+                    data = UserRefreshResponseDto(accessToken =  accessToken, refreshToken =  newRefreshToken.refreshToken),
                     message = "Access Token refreshed!"
                 )
             )
