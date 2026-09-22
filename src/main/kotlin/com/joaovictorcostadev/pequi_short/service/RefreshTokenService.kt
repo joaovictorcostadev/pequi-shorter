@@ -47,7 +47,7 @@ class RefreshTokenService (
         val token: RefreshToken = RefreshToken(
             token = refreshToken.hash(),
             user = user,
-            revokeAt = Instant.now().plus(15, ChronoUnit.DAYS)
+            revokeAt = Instant.now().plusMillis(expiration),
         )
 
         val savedRefreshToken: RefreshToken = repository.save(token)

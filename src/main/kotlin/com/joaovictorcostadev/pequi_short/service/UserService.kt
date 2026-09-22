@@ -1,5 +1,4 @@
 package com.joaovictorcostadev.pequi_short.service
-
 import com.joaovictorcostadev.pequi_short.dto.response.ResponseDto
 import com.joaovictorcostadev.pequi_short.dto.user.UserAuthRequestDto
 import com.joaovictorcostadev.pequi_short.dto.user.UserAuthResponseDto
@@ -201,7 +200,7 @@ class UserService(
             .secure(true)
             .httpOnly(true)
             .path("/")
-            .maxAge(accessExpiration / 1000)
+            .maxAge(refreshExpiration / 1000)
             .build()
 
         val savedRefreshToken = handlingRefreshToken(user, refresh) ?: return ResponseEntity.internalServerError().body(
@@ -317,7 +316,7 @@ class UserService(
             .secure(true)
             .httpOnly(true)
             .path("/")
-            .maxAge(accessExpiration / 1000)
+            .maxAge(refreshExpiration / 1000)
             .build()
 
         // Revoke a lastRefreshToken
