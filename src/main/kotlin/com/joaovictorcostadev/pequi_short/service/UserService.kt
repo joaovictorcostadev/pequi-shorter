@@ -43,7 +43,11 @@ class UserService(
     private val refreshTokenService: RefreshTokenService,
 
     @Value($$"${jwt.expiration}")
-    private val expiration: Long
+    private val accessExpiration: Long,
+
+    @Value($$"${jwt.refresh_expiration}")
+    private val refreshExpiration: Long,
+
 
 ) {
 
@@ -185,10 +189,19 @@ class UserService(
         val refresh = refreshTokenService.generateToken(userDetails)
         val user: User? = repository.findByEmail(userAuthRequest.email)
         val cookie: ResponseCookie = ResponseCookie.from(
-            "token", token)
+            "access_token", token)
+            .secure(true)
             .httpOnly(true)
             .path("/")
-            .maxAge(expiration / 1000)
+            .maxAge(accessExpiration / 1000)
+            .build()
+
+        val refreshTokenCookie: ResponseCookie = ResponseCookie.from(
+            "refresh_token", refresh)
+            .secure(true)
+            .httpOnly(true)
+            .path("/")
+            .maxAge(accessExpiration / 1000)
             .build()
 
         val savedRefreshToken = handlingRefreshToken(user, refresh) ?: return ResponseEntity.internalServerError().body(
@@ -201,6 +214,7 @@ class UserService(
 
         return ResponseEntity.ok()
             .header(HttpHeaders.SET_COOKIE, cookie.toString())
+            .header(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString())
             .body(
                 ResponseDto(
                 code = HttpStatus.OK.value(),
@@ -209,7 +223,7 @@ class UserService(
                         token = token,
                         refresh = savedRefreshToken,
                         iat = System.currentTimeMillis(),
-                        exp = System.currentTimeMillis() + expiration)
+                        exp = System.currentTimeMillis() + accessExpiration)
 
                 )
             )
@@ -239,9 +253,29 @@ class UserService(
             )
         }
 
+        val cookie: ResponseCookie = ResponseCookie.from(
+            "access_token", "")
+            .secure(true)
+            .httpOnly(true)
+            .path("/")
+            .maxAge(0)
+            .build()
+
+        val refreshTokenCookie: ResponseCookie = ResponseCookie.from(
+            "refresh_token", "")
+            .secure(true)
+            .httpOnly(true)
+            .path("/")
+            .maxAge(0)
+            .build()
+
         refreshTokenService.revokeRefreshTokens(listOf(refreshToken))
 
-        return ResponseEntity.noContent().build()
+        return ResponseEntity
+            .noContent()
+            .header(HttpHeaders.SET_COOKIE, cookie.toString())
+            .header(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString())
+            .build()
     }
 
     @Transactional
@@ -270,10 +304,29 @@ class UserService(
         val newRefreshToken: UserRefreshRequestDto = refreshTokenService.saveRefreshToken(lastRefreshToken.user, refreshTokenService.generateToken(userDetails)) ?:
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ResponseDto(code = HttpStatus.INTERNAL_SERVER_ERROR.value(), data = null, message = "Token not generated!"))
 
+        val cookie: ResponseCookie = ResponseCookie.from(
+            "access_token", accessToken)
+            .secure(true)
+            .httpOnly(true)
+            .path("/")
+            .maxAge(accessExpiration / 1000)
+            .build()
+
+        val refreshTokenCookie: ResponseCookie = ResponseCookie.from(
+            "refresh_token", newRefreshToken.refreshToken)
+            .secure(true)
+            .httpOnly(true)
+            .path("/")
+            .maxAge(accessExpiration / 1000)
+            .build()
+
         // Revoke a lastRefreshToken
         refreshTokenService.revokeRefreshTokens(listOf(lastRefreshToken))
 
-        return ResponseEntity.ok()
+        return ResponseEntity
+            .ok()
+            .header(HttpHeaders.SET_COOKIE, cookie.toString())
+            .header(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString())
             .body(
                 ResponseDto(
                     code = HttpStatus.OK.value(),
