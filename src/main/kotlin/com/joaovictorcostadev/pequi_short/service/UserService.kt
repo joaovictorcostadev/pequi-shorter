@@ -8,6 +8,7 @@ import com.joaovictorcostadev.pequi_short.dto.user.UserRefreshResponseDto
 import com.joaovictorcostadev.pequi_short.dto.user.UserRequestDto
 import com.joaovictorcostadev.pequi_short.dto.user.UserResponseDto
 import com.joaovictorcostadev.pequi_short.dto.user.UserUpdateResponseDto
+import com.joaovictorcostadev.pequi_short.entity.Group
 import com.joaovictorcostadev.pequi_short.entity.RefreshToken
 import com.joaovictorcostadev.pequi_short.repository.UserRepository
 import org.springframework.stereotype.Service
@@ -15,7 +16,6 @@ import com.joaovictorcostadev.pequi_short.entity.User
 import com.joaovictorcostadev.pequi_short.enum.GroupEnum
 import com.joaovictorcostadev.pequi_short.repository.GroupRepository
 import com.joaovictorcostadev.pequi_short.security.UserAuthenticated
-import com.joaovictorcostadev.pequi_short.util.hash
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.http.HttpHeaders
@@ -51,14 +51,15 @@ class UserService(
 ) {
 
     @Transactional
-    fun save(user: UserRequestDto) : ResponseEntity<ResponseDto<UserResponseDto>> {
-        val group = groupRepository.findById(user.groupId).orElseThrow{
-            RuntimeException("Group not found!")
-        }
+    fun save(user: UserRequestDto) : ResponseEntity<ResponseDto<UserResponseDto?>> {
+
+        val group: Group = groupRepository.findByIdOrNull(GroupEnum.USER.id)
+            ?: return ResponseEntity(ResponseDto(code = HttpStatus.NOT_FOUND.value(), data = null, message = "Group not found!"), HttpStatus.NOT_FOUND)
 
         val hashedPassword: String = passwordEncoder.encode(user.password).toString()
         val entity = User(name = user.name, email = user.email, password = hashedPassword, updatedAt = Instant.now() , group = group)
         val savedUser: User = repository.save(entity)
+
         return ResponseEntity.ok(
             ResponseDto(
                 code = HttpStatus.OK.value(),
@@ -84,7 +85,7 @@ class UserService(
                 )
         }
 
-        if(loggedUser?.id != id && loggedUser?.group?.id != GroupEnum.ADMIN.id) {
+        if(loggedUser?.id != id) {
             return ResponseEntity
                 .status(HttpStatus.FORBIDDEN)
                 .body(
@@ -124,7 +125,7 @@ class UserService(
                 )
         }
 
-        if(loggedUser?.id != id && loggedUser?.group?.id != GroupEnum.ADMIN.id) {
+        if(loggedUser?.id != id) {
             return ResponseEntity
                 .status(HttpStatus.FORBIDDEN)
                 .body(
@@ -154,6 +155,7 @@ class UserService(
 
     @Transactional
     fun delete(id: Long) : ResponseEntity<ResponseDto<UserResponseDto?>> {
+        val loggedUser = repository.findByEmail(userAuthenticated.getUsernameLogged())
         val user: User = repository.findByIdOrNull(id) ?: return ResponseEntity
             .badRequest().body(
                 ResponseDto(
@@ -162,6 +164,18 @@ class UserService(
                     message = "User not found!"
                 )
             )
+
+        if(loggedUser?.id != id) {
+            return ResponseEntity
+                .status(HttpStatus.FORBIDDEN)
+                .body(
+                    ResponseDto(
+                        code = HttpStatus.FORBIDDEN.value(),
+                        data = null,
+                        message = "Forbidden!"
+                    )
+                )
+        }
 
         repository.delete(user)
 

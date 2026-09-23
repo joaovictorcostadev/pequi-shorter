@@ -13,9 +13,6 @@ data class UserRequestDto(
     val email: String,
     @NotBlank
     val password: String,
-    @NotNull
-    @JsonProperty("group_id")
-    val groupId: Long,
 
 )
 
