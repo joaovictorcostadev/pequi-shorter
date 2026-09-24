@@ -1,0 +1,14 @@
+CREATE TABLE IF NOT EXISTS urls (
+    id BIGSERIAL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    external_url TEXT NOT NULL,
+    user_id BIGINT NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT uk_url_name UNIQUE (name),
+
+    CONSTRAINT fk_url_user
+    FOREIGN KEY (user_id)
+    REFERENCES "users" (id)
+    );
