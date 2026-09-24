@@ -7,9 +7,11 @@ import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
+import jakarta.persistence.Table
 import java.time.Instant
 
 @Entity
+@Table(name = "urls")
 data class Url(
 
     @Column(unique = true)

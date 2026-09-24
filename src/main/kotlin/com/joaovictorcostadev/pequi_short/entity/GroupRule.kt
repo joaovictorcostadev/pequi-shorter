@@ -10,7 +10,7 @@ import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
 
 @Entity
-@Table(name = "group_rules")
+@Table(name = "group_rule")
 data class GroupRule(
 
     @Id

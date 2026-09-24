@@ -14,9 +14,11 @@ import com.joaovictorcostadev.pequi_short.repository.UserRepository
 import com.joaovictorcostadev.pequi_short.service.AdminUserService
 import com.joaovictorcostadev.pequi_short.service.UserService
 import org.springframework.boot.CommandLineRunner
+import org.springframework.context.annotation.DependsOn
 import org.springframework.stereotype.Component
 
 @Component
+@DependsOn("flyway")
 class InitialDataSeeder(
     private val groupRepository: GroupRepository,
     private val ruleRepository: RuleRepository,
