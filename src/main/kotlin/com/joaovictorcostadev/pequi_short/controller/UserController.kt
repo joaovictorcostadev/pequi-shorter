@@ -9,6 +9,8 @@ import com.joaovictorcostadev.pequi_short.dto.user.UserRefreshResponseDto
 import com.joaovictorcostadev.pequi_short.dto.user.UserRequestDto
 import com.joaovictorcostadev.pequi_short.dto.user.UserResponseDto
 import com.joaovictorcostadev.pequi_short.dto.user.UserUpdateResponseDto
+import com.joaovictorcostadev.pequi_short.enum.GroupEnum
+import com.joaovictorcostadev.pequi_short.service.AuthService
 import com.joaovictorcostadev.pequi_short.service.CustomUserDetailsService
 import com.joaovictorcostadev.pequi_short.service.TokenService
 import com.joaovictorcostadev.pequi_short.service.UserService
@@ -32,27 +34,29 @@ import javax.crypto.SecretKey
 
 @RestController
 class UserController(
-    private val userService: UserService) {
+    private val userService: UserService,
+    private val authService: AuthService
+) {
 
 
     @PostMapping("api/user/auth/save")
-    fun save(@Valid @RequestBody userRequest: UserRequestDto) :  ResponseEntity<ResponseDto<UserResponseDto>> {
+    fun save(@Valid @RequestBody userRequest: UserRequestDto) :  ResponseEntity<ResponseDto<UserResponseDto?>> {
         return userService.save(userRequest);
     }
 
     @PostMapping("api/user/auth/login")
     fun auth(@Valid @RequestBody userAuthRequest: UserAuthRequestDto) : ResponseEntity<ResponseDto<UserAuthResponseDto?>> {
-        return  userService.auth(userAuthRequest)
+        return  authService.authenticate(userAuthRequest, GroupEnum.USER.id)
     }
 
     @PostMapping("api/user/auth/logout")
     fun logout(@Valid @RequestBody userLogoutRequest: UserLogoutRequest) : ResponseEntity<ResponseDto<String?>> {
-        return userService.logout(userLogoutRequest)
+        return authService.logout(userLogoutRequest)
     }
 
     @PostMapping("api/user/auth/refresh")
     fun refreshToken(@Valid @RequestBody userRefreshRequestDto: UserRefreshRequestDto) : ResponseEntity<ResponseDto<UserRefreshResponseDto?>> {
-        return  userService.refreshToken(userRefreshRequestDto)
+        return  authService.refreshToken(userRefreshRequestDto)
     }
 
 

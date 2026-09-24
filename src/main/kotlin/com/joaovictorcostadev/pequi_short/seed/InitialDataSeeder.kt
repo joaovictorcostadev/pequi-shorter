@@ -1,14 +1,17 @@
 package com.joaovictorcostadev.pequi_short.seed
 
+import com.joaovictorcostadev.pequi_short.dto.user.AdminUserRequestDto
 import com.joaovictorcostadev.pequi_short.dto.user.UserRequestDto
 import com.joaovictorcostadev.pequi_short.entity.Group
 import com.joaovictorcostadev.pequi_short.entity.GroupRule
 import com.joaovictorcostadev.pequi_short.entity.Rule
 import com.joaovictorcostadev.pequi_short.entity.User
+import com.joaovictorcostadev.pequi_short.enum.GroupEnum
 import com.joaovictorcostadev.pequi_short.repository.GroupRepository
 import com.joaovictorcostadev.pequi_short.repository.GroupRuleRepository
 import com.joaovictorcostadev.pequi_short.repository.RuleRepository
 import com.joaovictorcostadev.pequi_short.repository.UserRepository
+import com.joaovictorcostadev.pequi_short.service.AdminUserService
 import com.joaovictorcostadev.pequi_short.service.UserService
 import org.springframework.boot.CommandLineRunner
 import org.springframework.stereotype.Component
@@ -18,7 +21,8 @@ class InitialDataSeeder(
     private val groupRepository: GroupRepository,
     private val ruleRepository: RuleRepository,
     private val groupRuleRepository: GroupRuleRepository,
-    private val userService: UserService
+    private val userService: UserService,
+    private val adminUserService: AdminUserService,
 ) : CommandLineRunner {
 
     override fun run(vararg args: String) {
@@ -35,6 +39,10 @@ class InitialDataSeeder(
             Rule(name = "USER_UPDATE"),
             Rule(name = "USER_DELETE"),
             Rule(name = "USER_CREATE"),
+            Rule(name = "ADMIN_USER_GET"),
+            Rule(name = "ADMIN_USER_UPDATE"),
+            Rule(name = "ADMIN_USER_DELETE"),
+            Rule(name = "ADMIN_USER_CREATE"),
             Rule(name = "GROUP_GET"),
             Rule(name = "GROUP_GET_ALL"),
             Rule(name = "GROUP_CREATE"),
@@ -57,10 +65,10 @@ class InitialDataSeeder(
             )
 
         val adminRules: List<String> = listOf(
-            "USER_GET",
-            "USER_CREATE",
-            "USER_UPDATE",
-            "USER_DELETE",
+            "ADMIN_USER_GET",
+            "ADMIN_USER_CREATE",
+            "ADMIN_USER_UPDATE",
+            "ADMIN_USER_DELETE",
             "URL_GET",
             "URL_CREATE",
             "URL_UPDATE",
@@ -86,8 +94,7 @@ class InitialDataSeeder(
             }
         }
 
-        userService.save(UserRequestDto(name = "Joao Victor", email = "user@gmail.com", "user123", groupId = groupUser.id!!))
-        userService.save(UserRequestDto(name = "Joao Victor", email = "admin@gmail.com", "admin123", groupId = groupAdmin.id!!))
-
+        userService.save(UserRequestDto(name = "Joao Victor", email = "user@gmail.com", "user123"))
+        adminUserService.save(AdminUserRequestDto(name = "Admin", email = "admin@gmail.com", "user123", groupId = GroupEnum.ADMIN.id))
     }
 }

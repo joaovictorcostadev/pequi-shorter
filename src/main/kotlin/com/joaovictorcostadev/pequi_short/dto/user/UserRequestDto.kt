@@ -4,9 +4,17 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.Email
 import jakarta.validation.constraints.NotNull
-import java.time.Instant
 
-data class UserRequestDto(
+data class  UserRequestDto(
+    @NotBlank
+    val name:String,
+    @Email
+    val email: String,
+    @NotBlank
+    val password: String,
+)
+
+data class  AdminUserRequestDto(
     @NotBlank
     val name:String,
     @Email
@@ -14,7 +22,13 @@ data class UserRequestDto(
     @NotBlank
     val password: String,
 
+    @NotNull(message = "Group id is required!")
+    @JsonProperty("group_id")
+    val groupId: Long,
+
+    val id: Long? = null
 )
+
 
 data class UserResponseDto(
     val name: String,
