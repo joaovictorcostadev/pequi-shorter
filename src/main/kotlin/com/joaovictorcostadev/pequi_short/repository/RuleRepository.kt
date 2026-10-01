@@ -4,4 +4,5 @@ import com.joaovictorcostadev.pequi_short.entity.Rule
 import org.springframework.data.jpa.repository.JpaRepository
 
 interface RuleRepository : JpaRepository<Rule, Long> {
+    fun findByName(name: String): Rule?
 }
