@@ -29,45 +29,48 @@ import org.springframework.web.bind.annotation.RestController
 class AdminUserController(
     private val adminUserService: AdminUserService,
     private val authService: AuthService
-)
+) {
 
-{
-    @PostMapping("user/auth/save")
-    fun save(@Valid @RequestBody userRequest: AdminUserRequestDto) :  ResponseEntity<ResponseDto<UserResponseDto?>> {
-        return adminUserService.save(userRequest);
+    // ---- Endpoints protegidos (requerem autenticação + permissão ADMIN) ----
+
+    @PreAuthorize("hasAuthority('ADMIN_USER_CREATE')")
+    @PostMapping("user/save")
+    fun save(@Valid @RequestBody userRequest: AdminUserRequestDto): ResponseEntity<ResponseDto<UserResponseDto?>> {
+        return adminUserService.save(userRequest)
     }
-
 
     @PreAuthorize("hasAuthority('ADMIN_USER_GET')")
     @GetMapping("user/{id}")
-    fun getById(@PathVariable id: Long) : ResponseEntity<ResponseDto<UserResponseDto?>> {
-        return adminUserService.get(id);
+    fun getById(@PathVariable id: Long): ResponseEntity<ResponseDto<UserResponseDto?>> {
+        return adminUserService.get(id)
     }
 
-    @PreAuthorize(value = "hasAuthority('ADMIN_USER_UPDATE')")
+    @PreAuthorize("hasAuthority('ADMIN_USER_UPDATE')")
     @PutMapping("user/update/{id}")
-    fun updatedById(@Valid @RequestBody body: UserUpdateResponseDto, @PathVariable id: Long) : ResponseEntity<ResponseDto<UserResponseDto?>> {
+    fun updatedById(@Valid @RequestBody body: UserUpdateResponseDto, @PathVariable id: Long): ResponseEntity<ResponseDto<UserResponseDto?>> {
         return adminUserService.update(body, id)
     }
 
-    @PreAuthorize(value = "hasAuthority('ADMIN_USER_DELETE')")
+    @PreAuthorize("hasAuthority('ADMIN_USER_DELETE')")
     @DeleteMapping("user/delete/{id}")
-    fun  deleteById(@PathVariable id: Long) : ResponseEntity<ResponseDto<UserResponseDto?>> {
-        return adminUserService.delete(id);
+    fun deleteById(@PathVariable id: Long): ResponseEntity<ResponseDto<UserResponseDto?>> {
+        return adminUserService.delete(id)
     }
 
+    // ---- Endpoints públicos (auth) ----
+
     @PostMapping("user/auth/login")
-    fun auth(@Valid @RequestBody userAuthRequest: UserAuthRequestDto) : ResponseEntity<ResponseDto<UserAuthResponseDto?>> {
-        return  authService.authenticate(userAuthRequest, GroupEnum.USER.id)
+    fun auth(@Valid @RequestBody userAuthRequest: UserAuthRequestDto): ResponseEntity<ResponseDto<UserAuthResponseDto?>> {
+        return authService.authenticate(userAuthRequest, GroupEnum.ADMIN.id)
     }
 
     @PostMapping("user/auth/logout")
-    fun logout(@Valid @RequestBody userLogoutRequest: UserLogoutRequest) : ResponseEntity<ResponseDto<String?>> {
+    fun logout(@Valid @RequestBody userLogoutRequest: UserLogoutRequest): ResponseEntity<ResponseDto<String?>> {
         return authService.logout(userLogoutRequest)
     }
 
     @PostMapping("user/auth/refresh")
-    fun refreshToken(@Valid @RequestBody userRefreshRequestDto: UserRefreshRequestDto) : ResponseEntity<ResponseDto<UserRefreshResponseDto?>> {
-        return  authService.refreshToken(userRefreshRequestDto)
+    fun refreshToken(@Valid @RequestBody userRefreshRequestDto: UserRefreshRequestDto): ResponseEntity<ResponseDto<UserRefreshResponseDto?>> {
+        return authService.refreshToken(userRefreshRequestDto)
     }
 }

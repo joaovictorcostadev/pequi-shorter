@@ -49,10 +49,21 @@ class AuthService(
             UsernamePasswordAuthenticationToken(userAuthRequest.email, userAuthRequest.password)
         )
 
+        val user: User? = userRepository.findByEmail(userAuthRequest.email)
+
+        if (user == null || user.group.id != group) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
+                ResponseDto(
+                    code = HttpStatus.FORBIDDEN.value(),
+                    data = null,
+                    message = "Access denied! Invalid credentials for this login portal."
+                )
+            )
+        }
+
         val userDetails = userDetailsService.loadUserByUsername(userAuthRequest.email)
         val token = tokenService.generateToken(userDetails)
         val refresh = refreshTokenService.generateToken(userDetails)
-        val user: User? = userRepository.findByEmail(userAuthRequest.email)
         val cookie: ResponseCookie = ResponseCookie.from(
             "access_token", token)
             .secure(true)
