@@ -96,58 +96,6 @@ class AuthService(
     }
 
         @Transactional
-        private fun auth(userAuthRequest: UserAuthRequestDto) : ResponseEntity<ResponseDto<UserAuthResponseDto?>> {
-            authenticatorManager.authenticate(
-                UsernamePasswordAuthenticationToken(userAuthRequest.email, userAuthRequest.password)
-            )
-
-            val userDetails = userDetailsService.loadUserByUsername(userAuthRequest.email)
-            val token = tokenService.generateToken(userDetails)
-            val refresh = refreshTokenService.generateToken(userDetails)
-            val user: User? = userRepository.findByEmail(userAuthRequest.email)
-            val cookie: ResponseCookie = ResponseCookie.from(
-                "access_token", token)
-                .secure(true)
-                .httpOnly(true)
-                .path("/")
-                .maxAge(accessExpiration / 1000)
-                .build()
-
-            val refreshTokenCookie: ResponseCookie = ResponseCookie.from(
-                "refresh_token", refresh)
-                .secure(true)
-                .httpOnly(true)
-                .path("/")
-                .maxAge(refreshExpiration / 1000)
-                .build()
-
-            val savedRefreshToken = handlingRefreshToken(user, refresh) ?: return ResponseEntity.internalServerError().body(
-                ResponseDto(
-                    code = HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                    data = null,
-                    message = "Server Error - Refresh Token not configured!"
-                )
-            )
-
-            return ResponseEntity.ok()
-                .header(HttpHeaders.SET_COOKIE, cookie.toString())
-                .header(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString())
-                .body(
-                    ResponseDto(
-                        code = HttpStatus.OK.value(),
-                        message = "Authorized",
-                        data = UserAuthResponseDto(
-                            token = token,
-                            refresh = savedRefreshToken,
-                            iat = System.currentTimeMillis(),
-                            exp = System.currentTimeMillis() + accessExpiration)
-
-                    )
-                )
-
-        }
-
-        @Transactional
         fun logout(userLogoutRequest: UserLogoutRequest) : ResponseEntity<ResponseDto<String?>> {
 
             val refreshToken: RefreshToken = refreshTokenService.getRefreshTokenByToken(userLogoutRequest.refreshToken) ?:
