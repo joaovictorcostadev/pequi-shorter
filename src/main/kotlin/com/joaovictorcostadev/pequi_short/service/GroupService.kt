@@ -3,108 +3,61 @@ package com.joaovictorcostadev.pequi_short.service
 import com.joaovictorcostadev.pequi_short.dto.group.GroupRequestDto
 import com.joaovictorcostadev.pequi_short.dto.group.GroupResponseDto
 import com.joaovictorcostadev.pequi_short.dto.group.GroupUpdateRequestDto
-import com.joaovictorcostadev.pequi_short.dto.response.ResponseDto
 import com.joaovictorcostadev.pequi_short.entity.Group
+import com.joaovictorcostadev.pequi_short.exception.NotFoundException
 import com.joaovictorcostadev.pequi_short.repository.GroupRepository
 import org.springframework.data.repository.findByIdOrNull
-import org.springframework.http.HttpEntity
-import org.springframework.http.HttpStatus
-import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
 
 @Service
 class GroupService(val repository: GroupRepository) {
 
-    fun save(group: GroupRequestDto) : ResponseEntity<ResponseDto<GroupResponseDto>> {
+    fun save(group: GroupRequestDto): GroupResponseDto {
         val entitySaved = repository.save(Group(name = group.name))
-        return ResponseEntity.ok()
-            .body(
-                ResponseDto(
-                    code = HttpStatus.OK.value(),
-                    message = "Created group!",
-                    data = GroupResponseDto(id = requireNotNull(entitySaved.id), name = entitySaved.name)
-                )
-            )
-    }
-
-    fun get( id: Long) : ResponseEntity<ResponseDto<GroupResponseDto?>> {
-
-        val group: Group = repository.findByIdOrNull(id)
-            ?: return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(ResponseDto(
-                    code = HttpStatus.NOT_FOUND.value(),
-                    data = null,
-                    message = "")
-                )
-
-        return ResponseEntity.ok().
-        body(
-            ResponseDto(
-                code = HttpStatus.OK.value(),
-                data = GroupResponseDto(
-                    id = group.id!!,
-                    name = group.name),
-                message = "Group found!"
-            )
+        return GroupResponseDto(
+            id = requireNotNull(entitySaved.id),
+            name = entitySaved.name
         )
-
     }
 
-    fun getAll() : ResponseEntity<ResponseDto<List<GroupResponseDto?>>> {
+    fun get(id: Long): GroupResponseDto {
+        val group = repository.findByIdOrNull(id)
+            ?: throw NotFoundException("Group not found!")
 
-        val groups: List<GroupResponseDto> = repository.findAll()
-            .map { GroupResponseDto(id = it.id!!, it.name) }
-
-        return ResponseEntity.ok().
-        body(
-            ResponseDto(
-                code = HttpStatus.OK.value(),
-                data = groups,
-                message = "Group found!"
-            )
+        return GroupResponseDto(
+            id = group.id!!,
+            name = group.name
         )
-
     }
 
-    fun update(groupRequest: GroupUpdateRequestDto) : ResponseEntity<ResponseDto<GroupResponseDto?>> {
+    fun getAll(): List<GroupResponseDto> {
+        return repository.findAll()
+            .map { GroupResponseDto(id = it.id!!, name = it.name) }
+    }
 
-        val group: Group = repository.findByIdOrNull(groupRequest.id)
-            ?: return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(ResponseDto(
-                    HttpStatus.NOT_FOUND.value(),
-                    message = "Group not found!",
-                    data = null)
-                )
+    fun update(groupRequest: GroupUpdateRequestDto): GroupResponseDto {
+        val group = repository.findByIdOrNull(groupRequest.id)
+            ?: throw NotFoundException("Group not found!")
+
         group.name = groupRequest.name
         repository.save(group)
 
-        return ResponseEntity
-            .ok(
-                ResponseDto(
-                    code = HttpStatus.OK.value(),
-                    message = "Group Updated",
-                    data = GroupResponseDto(id = groupRequest.id, name = groupRequest.name),
-                    )
-            )
+        return GroupResponseDto(
+            id = groupRequest.id,
+            name = groupRequest.name
+        )
     }
 
-    fun delete(id: Long) : ResponseEntity<ResponseDto<GroupResponseDto?>> {
-        val group: Group = repository.findByIdOrNull(id)
-            ?: return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(ResponseDto(
-                    code = HttpStatus.NOT_FOUND.value(),
-                    data = null,
-                    message = "")
-                )
+    fun delete(id: Long): GroupResponseDto {
+        val group = repository.findByIdOrNull(id)
+            ?: throw NotFoundException("Group not found!")
+
         repository.delete(group)
 
-        return ResponseEntity.ok()
-            .body(
-                ResponseDto(
-                    code = HttpStatus.OK.value(),
-                    data = GroupResponseDto(id = group.id!!, name = group.name),
-                    message = "Group deleted!")
-            )
+        return GroupResponseDto(
+            id = group.id!!,
+            name = group.name
+        )
     }
 
 }

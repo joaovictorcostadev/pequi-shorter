@@ -13,6 +13,9 @@ import com.joaovictorcostadev.pequi_short.enum.GroupEnum
 import com.joaovictorcostadev.pequi_short.service.AuthService
 import com.joaovictorcostadev.pequi_short.service.UserService
 import jakarta.validation.Valid
+import org.springframework.http.HttpHeaders
+import org.springframework.http.HttpStatus
+import org.springframework.http.ResponseCookie
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -32,42 +35,96 @@ class UserController(
     // ---- Endpoints públicos (auth/registro) ----
 
     @PostMapping("api/user/auth/save")
-    fun save(@Valid @RequestBody userRequest: UserRequestDto): ResponseEntity<ResponseDto<UserResponseDto?>> {
-        return userService.save(userRequest)
+    fun save(@Valid @RequestBody userRequest: UserRequestDto): ResponseEntity<ResponseDto<UserResponseDto>> {
+        val data = userService.save(userRequest)
+        return ResponseEntity.ok(ResponseDto(code = HttpStatus.OK.value(), data = data, message = "User created"))
     }
 
     @PostMapping("api/user/auth/login")
-    fun auth(@Valid @RequestBody userAuthRequest: UserAuthRequestDto): ResponseEntity<ResponseDto<UserAuthResponseDto?>> {
-        return authService.authenticate(userAuthRequest, GroupEnum.USER.id)
+    fun auth(@Valid @RequestBody userAuthRequest: UserAuthRequestDto): ResponseEntity<ResponseDto<UserAuthResponseDto>> {
+        val result = authService.authenticate(userAuthRequest, GroupEnum.USER.id)
+
+        val cookie = createSecureCookie("access_token", result.accessToken, result.accessExpirationMs / 1000)
+        val refreshCookie = createSecureCookie("refresh_token", result.refreshToken, result.refreshExpirationMs / 1000)
+
+        return ResponseEntity.ok()
+            .header(HttpHeaders.SET_COOKIE, cookie.toString())
+            .header(HttpHeaders.SET_COOKIE, refreshCookie.toString())
+            .body(
+                ResponseDto(
+                    code = HttpStatus.OK.value(),
+                    message = "Authorized",
+                    data = UserAuthResponseDto(
+                        token = result.accessToken,
+                        refresh = result.refreshToken,
+                        iat = result.iat,
+                        exp = result.exp
+                    )
+                )
+            )
     }
 
     @PostMapping("api/user/auth/logout")
-    fun logout(@Valid @RequestBody userLogoutRequest: UserLogoutRequest): ResponseEntity<ResponseDto<String?>> {
-        return authService.logout(userLogoutRequest)
+    fun logout(@Valid @RequestBody userLogoutRequest: UserLogoutRequest): ResponseEntity<Void> {
+        authService.logout(userLogoutRequest)
+
+        val cookie = createSecureCookie("access_token", "", 0)
+        val refreshCookie = createSecureCookie("refresh_token", "", 0)
+
+        return ResponseEntity.noContent()
+            .header(HttpHeaders.SET_COOKIE, cookie.toString())
+            .header(HttpHeaders.SET_COOKIE, refreshCookie.toString())
+            .build()
     }
 
     @PostMapping("api/user/auth/refresh")
-    fun refreshToken(@Valid @RequestBody userRefreshRequestDto: UserRefreshRequestDto): ResponseEntity<ResponseDto<UserRefreshResponseDto?>> {
-        return authService.refreshToken(userRefreshRequestDto)
+    fun refreshToken(@Valid @RequestBody userRefreshRequestDto: UserRefreshRequestDto): ResponseEntity<ResponseDto<UserRefreshResponseDto>> {
+        val result = authService.refreshToken(userRefreshRequestDto)
+
+        val cookie = createSecureCookie("access_token", result.accessToken, result.accessExpirationMs / 1000)
+        val refreshCookie = createSecureCookie("refresh_token", result.refreshToken, result.refreshExpirationMs / 1000)
+
+        return ResponseEntity.ok()
+            .header(HttpHeaders.SET_COOKIE, cookie.toString())
+            .header(HttpHeaders.SET_COOKIE, refreshCookie.toString())
+            .body(
+                ResponseDto(
+                    code = HttpStatus.OK.value(),
+                    data = UserRefreshResponseDto(accessToken = result.accessToken, refreshToken = result.refreshToken),
+                    message = "Access Token refreshed!"
+                )
+            )
     }
 
     // ---- Endpoints protegidos (somente dados do próprio usuário) ----
 
     @PreAuthorize("hasAuthority('USER_GET')")
     @GetMapping("api/user/{id}")
-    fun getById(@PathVariable id: Long): ResponseEntity<ResponseDto<UserResponseDto?>> {
-        return userService.get(id)
+    fun getById(@PathVariable id: Long): ResponseEntity<ResponseDto<UserResponseDto>> {
+        val data = userService.get(id)
+        return ResponseEntity.ok(ResponseDto(code = HttpStatus.OK.value(), data = data, message = "User found!"))
     }
 
     @PreAuthorize("hasAuthority('USER_UPDATE')")
     @PutMapping("api/user/update/{id}")
-    fun updatedById(@Valid @RequestBody body: UserUpdateResponseDto, @PathVariable id: Long): ResponseEntity<ResponseDto<UserResponseDto?>> {
-        return userService.update(body, id)
+    fun updatedById(@Valid @RequestBody body: UserUpdateResponseDto, @PathVariable id: Long): ResponseEntity<ResponseDto<UserResponseDto>> {
+        val data = userService.update(body, id)
+        return ResponseEntity.ok(ResponseDto(code = HttpStatus.OK.value(), data = data, message = "User updated!"))
     }
 
     @PreAuthorize("hasAuthority('USER_DELETE')")
     @DeleteMapping("api/user/delete/{id}")
-    fun deleteById(@PathVariable id: Long): ResponseEntity<ResponseDto<UserResponseDto?>> {
-        return userService.delete(id)
+    fun deleteById(@PathVariable id: Long): ResponseEntity<ResponseDto<UserResponseDto>> {
+        val data = userService.delete(id)
+        return ResponseEntity.ok(ResponseDto(code = HttpStatus.OK.value(), data = data, message = "User Deleted!"))
+    }
+
+    private fun createSecureCookie(key: String, value: String, maxAge: Long): ResponseCookie {
+        return ResponseCookie.from(key, value)
+            .secure(true)
+            .httpOnly(true)
+            .path("/")
+            .maxAge(maxAge)
+            .build()
     }
 }

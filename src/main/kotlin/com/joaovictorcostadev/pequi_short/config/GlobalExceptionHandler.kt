@@ -1,6 +1,7 @@
 package com.joaovictorcostadev.pequi_short.config
 
 import com.joaovictorcostadev.pequi_short.dto.response.ResponseDto
+import com.joaovictorcostadev.pequi_short.exception.BusinessException
 import io.jsonwebtoken.security.SignatureException
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -11,6 +12,17 @@ import org.springframework.web.bind.annotation.RestControllerAdvice
 
 @RestControllerAdvice
 class GlobalExceptionHandler {
+
+    @ExceptionHandler(BusinessException::class)
+    fun handleBusinessException(ex: BusinessException): ResponseEntity<ResponseDto<Nothing?>> {
+        return ResponseEntity.status(ex.status).body(
+            ResponseDto(
+                code = ex.status.value(),
+                data = null,
+                message = ex.message
+            )
+        )
+    }
 
     @ExceptionHandler(MethodArgumentNotValidException::class)
      fun handleValidation(ex: MethodArgumentNotValidException) : ResponseEntity<ResponseDto<Map<String, String>?>> {
