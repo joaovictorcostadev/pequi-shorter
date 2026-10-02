@@ -1,4 +1,4 @@
-# 🥜 Pequi Shorter
+# Pequi Shorter
 
 Encurtador de URLs com analytics de acesso, autenticação JWT e sistema RBAC de permissões.
 
