@@ -1,11 +1,14 @@
 package com.joaovictorcostadev.pequi_short.seed
 
+import com.joaovictorcostadev.pequi_short.dto.user.AdminUserRequestDto
 import com.joaovictorcostadev.pequi_short.entity.Group
 import com.joaovictorcostadev.pequi_short.entity.GroupRule
 import com.joaovictorcostadev.pequi_short.entity.Rule
 import com.joaovictorcostadev.pequi_short.repository.GroupRepository
 import com.joaovictorcostadev.pequi_short.repository.GroupRuleRepository
 import com.joaovictorcostadev.pequi_short.repository.RuleRepository
+import com.joaovictorcostadev.pequi_short.repository.UserRepository
+import com.joaovictorcostadev.pequi_short.service.AdminUserService
 import org.slf4j.LoggerFactory
 import org.springframework.boot.CommandLineRunner
 import org.springframework.context.annotation.DependsOn
@@ -18,6 +21,8 @@ class InitialDataSeeder(
     private val groupRepository: GroupRepository,
     private val ruleRepository: RuleRepository,
     private val groupRuleRepository: GroupRuleRepository,
+    private val userRepository: UserRepository,
+    private val adminUserService: AdminUserService,
 ) : CommandLineRunner {
 
     private val logger = LoggerFactory.getLogger(InitialDataSeeder::class.java)
@@ -59,7 +64,39 @@ class InitialDataSeeder(
             }
         }
 
+        // Seed test users if none exist
+        seedTestUsers(groupAdmin, groupUser)
+
         logger.info("Initial data seeding completed.")
+    }
+
+    private fun seedTestUsers(groupAdmin: Group, groupUser: Group) {
+        if (userRepository.count() > 0) {
+            logger.info("Users already exist, skipping user seeding.")
+            return
+        }
+
+        logger.info("No users found. Creating test users...")
+
+        adminUserService.save(
+            AdminUserRequestDto(
+                name = "Admin",
+                email = "admin@test.com",
+                password = "admin123",
+                groupId = groupAdmin.id!!,
+            )
+        )
+        logger.info("Created admin user: admin@test.com / admin123")
+
+        adminUserService.save(
+            AdminUserRequestDto(
+                name = "User",
+                email = "user@test.com",
+                password = "user123",
+                groupId = groupUser.id!!,
+            )
+        )
+        logger.info("Created regular user: user@test.com / user123")
     }
 
     private fun findOrCreateGroup(name: String): Group {
