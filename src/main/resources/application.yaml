@@ -1,11 +1,13 @@
 spring:
   application:
     name: pequi-short
+  config:
+    import: optional:file:.env[.properties]
 
   datasource:
-    url: jdbc:postgresql://localhost:5432/pequishortdb
-    username: pequishort
-    password: admin
+    url: jdbc:postgresql://localhost:5432/${APP_DB_DATABASE}
+    username: ${APP_DB_USER}
+    password: ${APP_DB_PASSWORD}
 
   flyway:
     enabled: true
@@ -25,10 +27,10 @@ logging:
     org.flywaydb: DEBUG
 
 jwt:
-  secret: 948bd69c93866c12a1b647027404dd12cf7ccde1a76cdc1b87e28638c7d175a3
-  expiration: 900000
-  refresh_secret: 22a2fa7d04248931a8853a7714b86546610afd01b2b1841890e979ba7ba6bcae
-  refresh_expiration: 1296000000
+  secret: ${APP_ACCESS_TOKEN_HASH}
+  expiration: ${APP_ACCESS_TOKEN_EXPIRATION}
+  refresh_secret: ${APP_REFRESH_TOKEN_HASH}
+  refresh_expiration: ${APP_REFRESH_TOKEN_EXPIRATION}
 
 host:
   name: http://localhost:8080
