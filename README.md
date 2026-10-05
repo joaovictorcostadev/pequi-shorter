@@ -1,10 +1,10 @@
 # Pequi Shorter
 
-Encurtador de URLs com analytics de acesso, autenticação JWT e sistema RBAC de permissões.
+URL shortener with access analytics, JWT authentication, and RBAC permission system.
 
 ## 🛠️ Tech Stack
 
-| Tecnologia | Versão |
+| Technology | Version |
 |---|---|
 | Kotlin | 2.3.21 |
 | Spring Boot | 4.1.0 |
@@ -16,29 +16,29 @@ Encurtador de URLs com analytics de acesso, autenticação JWT e sistema RBAC de
 | MaxMind GeoIP2 | 5.1.0 |
 | Docker | Multi-stage build |
 
-## 📦 Funcionalidades
+## 📦 Features
 
-- ✅ Encurtamento de URLs com código customizado ou auto-gerado
-- ✅ Redirecionamento via `/r/{code}`
-- ✅ Analytics de acesso (IP, país, estado, cidade, browser, OS, device)
-- ✅ Autenticação JWT com access + refresh token (HttpOnly cookies)
-- ✅ Refresh token rotation com revogação
-- ✅ Sistema RBAC (Role-Based Access Control) com Groups e Rules
-- ✅ Painel Admin separado do painel User
-- ✅ CRUD completo de Users, Groups, Rules e URLs
-- ✅ Geolocalização de acessos via MaxMind GeoLite2
-- ✅ Senhas hasheadas com Argon2
-- ✅ Migrations versionadas com Flyway
+- ✅ URL shortening with custom or auto-generated codes
+- ✅ Redirection via `/r/{code}`
+- ✅ Access analytics (IP, country, state, city, browser, OS, device)
+- ✅ JWT authentication with access + refresh token (HttpOnly cookies)
+- ✅ Refresh token rotation with revocation
+- ✅ RBAC (Role-Based Access Control) system with Groups and Rules
+- ✅ Separate Admin and User panels
+- ✅ Full CRUD for Users, Groups, Rules, and URLs
+- ✅ Access geolocation via MaxMind GeoLite2
+- ✅ Hashed passwords with Argon2
+- ✅ Versioned migrations with Flyway
 
-## 🚀 Como rodar
+## 🚀 How to Run
 
-### Pré-requisitos
+### Prerequisites
 
 - Java 21+
-- PostgreSQL rodando na porta `5432`
-- Banco de dados `pequishortdb` criado
+- PostgreSQL running on port `5432`
+- Database `pequishortdb` created
 
-### Setup do banco
+### Database Setup
 
 ```sql
 CREATE DATABASE pequishortdb;
@@ -46,126 +46,128 @@ CREATE USER pequishort WITH PASSWORD 'admin';
 GRANT ALL PRIVILEGES ON DATABASE pequishortdb TO pequishort;
 ```
 
-### Rodando a aplicação
+### Running the application
 
 ```bash
 ./gradlew bootRun
 ```
 
-A aplicação sobe em `http://localhost:8080`.
+The application starts at `http://localhost:8080`.
 
 ### Docker
+
+> ⚠️ **WARNING:** Before starting the application, you must fill in the environment variables in the `.env-copy` file and rename it to `.env` (just remove `-copy` from the name). The application will not work without it!
 
 ```bash
 docker build -t pequi-shorter .
 docker run -p 8080:8080 pequi-shorter
 ```
 
-> ⚠️ O container precisa de acesso a um PostgreSQL. Configure as variáveis de ambiente ou use um `docker-compose`.
+> ⚠️ The container needs access to a PostgreSQL database. Configure the credentials in your new `.env` file or use a `docker-compose`.
 
-## 🔐 Autenticação
+## 🔐 Authentication
 
-A API usa **JWT** com dois tokens:
+The API uses **JWT** with two tokens:
 
-| Token | Tipo | Expiração | Armazenamento |
+| Token | Type | Expiration | Storage |
 |---|---|---|---|
-| Access Token | JWT assinado | 15 min | Cookie `access_token` (HttpOnly, Secure) + body |
-| Refresh Token | Hash SHA-256 | 15 dias | Cookie `refresh_token` (HttpOnly, Secure) + body |
+| Access Token | Signed JWT | 15 min | Cookie `access_token` (HttpOnly, Secure) + body |
+| Refresh Token | SHA-256 Hash | 15 days | Cookie `refresh_token` (HttpOnly, Secure) + body |
 
-### Fluxo
+### Flow
 
 ```
-1. POST /api/user/auth/login     → Recebe access_token + refresh_token
-2. Requisições autenticadas      → Header: Authorization: Bearer <access_token>
-3. POST /api/user/auth/refresh   → Troca refresh_token por novo par de tokens
-4. POST /api/user/auth/logout    → Revoga refresh_token e limpa cookies
+1. POST /api/user/auth/login     → Receives access_token + refresh_token
+2. Authenticated requests      → Header: Authorization: Bearer <access_token>
+3. POST /api/user/auth/refresh   → Exchanges refresh_token for a new pair of tokens
+4. POST /api/user/auth/logout    → Revokes refresh_token and clears cookies
 ```
 
-### Usuários de teste (seed automático)
+### Test Users (Automatic Seed)
 
-| Email | Senha | Grupo |
+| Email | Password | Group |
 |---|---|---|
 | `admin@test.com` | `admin123` | ADMIN |
 | `user@test.com` | `user123` | USER |
 
 ## 📡 API Endpoints
 
-### Autenticação — User (`/api/user/auth/`)
+### Authentication — User (`/api/user/auth/`)
 
-| Método | Rota | Descrição | Auth |
+| Method | Route | Description | Auth |
 |---|---|---|---|
-| `POST` | `/api/user/auth/save` | Registro de novo usuário | ❌ |
-| `POST` | `/api/user/auth/login` | Login (retorna tokens) | ❌ |
-| `POST` | `/api/user/auth/logout` | Logout (revoga refresh token) | ❌ |
-| `POST` | `/api/user/auth/refresh` | Refresh do access token | ❌ |
+| `POST` | `/api/user/auth/save` | New user registration | ❌ |
+| `POST` | `/api/user/auth/login` | Login (returns tokens) | ❌ |
+| `POST` | `/api/user/auth/logout` | Logout (revokes refresh token) | ❌ |
+| `POST` | `/api/user/auth/refresh` | Access token refresh | ❌ |
 
-### Autenticação — Admin (`/api/admin/user/auth/`)
+### Authentication — Admin (`/api/admin/user/auth/`)
 
-| Método | Rota | Descrição | Auth |
+| Method | Route | Description | Auth |
 |---|---|---|---|
-| `POST` | `/api/admin/user/auth/login` | Login admin | ❌ |
-| `POST` | `/api/admin/user/auth/logout` | Logout admin | ❌ |
-| `POST` | `/api/admin/user/auth/refresh` | Refresh admin | ❌ |
+| `POST` | `/api/admin/user/auth/login` | Admin login | ❌ |
+| `POST` | `/api/admin/user/auth/logout` | Admin logout | ❌ |
+| `POST` | `/api/admin/user/auth/refresh` | Admin refresh | ❌ |
 
 ### Users (`/api/user/`)
 
-| Método | Rota | Descrição | Permissão |
+| Method | Route | Description | Permission |
 |---|---|---|---|
-| `GET` | `/api/user/{id}` | Buscar usuário por ID | `USER_GET` |
-| `PUT` | `/api/user/update/{id}` | Atualizar usuário | `USER_UPDATE` |
-| `DELETE` | `/api/user/delete/{id}` | Deletar usuário | `USER_DELETE` |
+| `GET` | `/api/user/{id}` | Get user by ID | `USER_GET` |
+| `PUT` | `/api/user/update/{id}` | Update user | `USER_UPDATE` |
+| `DELETE` | `/api/user/delete/{id}` | Delete user | `USER_DELETE` |
 
-> 💡 Usuários comuns só podem acessar/editar/deletar **seus próprios dados**.
+> 💡 Regular users can only access/edit/delete **their own data**.
 
 ### Admin Users (`/api/admin/user/`)
 
-| Método | Rota | Descrição | Permissão |
+| Method | Route | Description | Permission |
 |---|---|---|---|
-| `POST` | `/api/admin/user/save` | Criar usuário (qualquer grupo) | `ADMIN_USER_CREATE` |
-| `GET` | `/api/admin/user/{id}` | Buscar qualquer usuário | `ADMIN_USER_GET` |
-| `PUT` | `/api/admin/user/update/{id}` | Atualizar qualquer usuário | `ADMIN_USER_UPDATE` |
-| `DELETE` | `/api/admin/user/delete/{id}` | Deletar qualquer usuário | `ADMIN_USER_DELETE` |
+| `POST` | `/api/admin/user/save` | Create user (any group) | `ADMIN_USER_CREATE` |
+| `GET` | `/api/admin/user/{id}` | Get any user | `ADMIN_USER_GET` |
+| `PUT` | `/api/admin/user/update/{id}` | Update any user | `ADMIN_USER_UPDATE` |
+| `DELETE` | `/api/admin/user/delete/{id}` | Delete any user | `ADMIN_USER_DELETE` |
 
 ### URLs (`/api/url/`)
 
-| Método | Rota | Descrição | Permissão |
+| Method | Route | Description | Permission |
 |---|---|---|---|
-| `POST` | `/api/url/save` | Criar URL encurtada | `URL_CREATE` |
-| `GET` | `/api/url/get` | Listar URLs do usuário logado | `URL_GET` |
-| `DELETE` | `/api/url/delete/{id}` | Deletar URL | `URL_DELETE` |
-| `GET` | `/r/{name}` | **Redirect** (público) | ❌ |
+| `POST` | `/api/url/save` | Create shortened URL | `URL_CREATE` |
+| `GET` | `/api/url/get` | List URLs for logged user | `URL_GET` |
+| `DELETE` | `/api/url/delete/{id}` | Delete URL | `URL_DELETE` |
+| `GET` | `/r/{name}` | **Redirect** (public) | ❌ |
 
 ### Groups (`/api/group/`)
 
-| Método | Rota | Descrição | Permissão |
+| Method | Route | Description | Permission |
 |---|---|---|---|
-| `POST` | `/api/group/save` | Criar grupo | `GROUP_CREATE` |
-| `GET` | `/api/group/{id}` | Buscar grupo por ID | `GROUP_GET` |
-| `GET` | `/api/group/` | Listar todos os grupos | `GROUP_GET_ALL` |
-| `PUT` | `/api/group/update` | Atualizar grupo | `GROUP_UPDATE` |
-| `DELETE` | `/api/group/delete/{id}` | Deletar grupo | `GROUP_DELETE` |
+| `POST` | `/api/group/save` | Create group | `GROUP_CREATE` |
+| `GET` | `/api/group/{id}` | Get group by ID | `GROUP_GET` |
+| `GET` | `/api/group/` | List all groups | `GROUP_GET_ALL` |
+| `PUT` | `/api/group/update` | Update group | `GROUP_UPDATE` |
+| `DELETE` | `/api/group/delete/{id}` | Delete group | `GROUP_DELETE` |
 
 ### Rules (`/api/rule/`)
 
-| Método | Rota | Descrição | Permissão |
+| Method | Route | Description | Permission |
 |---|---|---|---|
-| `POST` | `/api/rule/save` | Criar regra | `RULE_CREATE` |
-| `GET` | `/api/rule/getAll` | Listar todas as regras | `RULE_GET_ALL` |
-| `GET` | `/api/rule/{id}` | Buscar regra por ID | `RULE_GET` |
-| `PUT` | `/api/rule/update` | Atualizar regra | `RULE_UPDATE` |
-| `DELETE` | `/api/rule/delete/{id}` | Deletar regra | `RULE_DELETE` |
+| `POST` | `/api/rule/save` | Create rule | `RULE_CREATE` |
+| `GET` | `/api/rule/getAll` | List all rules | `RULE_GET_ALL` |
+| `GET` | `/api/rule/{id}` | Get rule by ID | `RULE_GET` |
+| `PUT` | `/api/rule/update` | Update rule | `RULE_UPDATE` |
+| `DELETE` | `/api/rule/delete/{id}` | Delete rule | `RULE_DELETE` |
 
-## 🏗️ Arquitetura
+## 🏗️ Architecture
 
 ```
-controller/          → Camada HTTP (ResponseEntity, cookies, validação)
+controller/          → HTTP Layer (ResponseEntity, cookies, validation)
   ├── UrlController
   ├── UserController
   ├── AdminUserController
   ├── GroupController
   └── RuleController
 
-service/             → Lógica de negócio (retorna DTOs, lança exceções)
+service/             → Business logic (returns DTOs, throws exceptions)
   ├── UrlService
   ├── UserService
   ├── AdminUserService
@@ -178,7 +180,7 @@ service/             → Lógica de negócio (retorna DTOs, lança exceções)
   ├── UrlAccessService
   └── CustomUserDetailsService
 
-entity/              → Entidades JPA
+entity/              → JPA Entities
   ├── User
   ├── Url
   ├── UrlAccess
@@ -196,13 +198,13 @@ dto/                 → Data Transfer Objects
   ├── geoip/
   └── response/
 
-exception/           → Exceções de negócio (capturadas pelo GlobalExceptionHandler)
+exception/           → Business exceptions (caught by GlobalExceptionHandler)
 security/            → JWT filter, SecurityConfig, UserAuthenticated
 config/              → Flyway, GlobalExceptionHandler
-seed/                → InitialDataSeeder (groups, rules, usuários de teste)
+seed/                → InitialDataSeeder (groups, rules, test users)
 ```
 
-## 🗃️ Modelo de Dados
+## 🗃️ Data Model
 
 ```
 ┌──────────┐     ┌───────────┐     ┌──────────┐
@@ -220,6 +222,6 @@ seed/                → InitialDataSeeder (groups, rules, usuários de teste)
 └──────────┘     └───────────────┘
 ```
 
-## 📄 Licença
+## 📄 License
 
-Este projeto é um side-project pessoal de estudos.
+This project is a personal side-project for study purposes.
