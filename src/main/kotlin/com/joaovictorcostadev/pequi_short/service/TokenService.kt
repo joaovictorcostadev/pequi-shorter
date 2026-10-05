@@ -39,10 +39,13 @@ class TokenService (
     }
 
     fun isTokenValid(token: String, userDetails: UserDetails) : Boolean {
-        val username: String = extractUsername(token)
-        val expiration = getClaims(token).expiration
-
-        return username == userDetails.username && expiration.after(Date())
+        return try {
+            val username: String = extractUsername(token)
+            val expiration = getClaims(token).expiration
+            username == userDetails.username && expiration.after(Date())
+        } catch (e: io.jsonwebtoken.JwtException) {
+            false
+        }
     }
 
 
