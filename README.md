@@ -14,6 +14,7 @@ URL shortener with access analytics, JWT authentication, and RBAC permission sys
 | JWT (jjwt) | 0.12.7 |
 | Argon2 (Spring Security) | — |
 | MaxMind GeoIP2 | 5.1.0 |
+| Springdoc OpenAPI (Swagger) | 2.8.13 |
 | Docker | Multi-stage build |
 
 ## 📦 Features
@@ -89,6 +90,13 @@ The API uses **JWT** with two tokens:
 |---|---|---|
 | `admin@test.com` | `admin123` | ADMIN |
 | `user@test.com` | `user123` | USER |
+
+## 📚 API Documentation
+
+Interactive API documentation powered by **Swagger UI / Springdoc OpenAPI** is available when running the application locally:
+
+- **Swagger UI**: [http://localhost:8080/swagger-ui/index.html](http://localhost:8080/swagger-ui/index.html)
+- **OpenAPI Spec (JSON)**: [http://localhost:8080/v3/api-docs](http://localhost:8080/v3/api-docs)
 
 ## 📡 API Endpoints
 

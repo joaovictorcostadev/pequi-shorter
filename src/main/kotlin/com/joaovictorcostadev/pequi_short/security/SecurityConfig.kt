@@ -36,6 +36,11 @@ class SecurityConfig (
                 it.requestMatchers("/api/user/auth/**").permitAll()
                 it.requestMatchers("/api/admin/user/auth/**").permitAll()
                 it.requestMatchers("/r/*").permitAll()
+                it.requestMatchers(
+                    "/v3/api-docs/**",
+                    "/swagger-ui/**",
+                    "/swagger-ui.html"
+                ).permitAll()
                 it.anyRequest().authenticated()
             }
             .sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.STATELESS) }
