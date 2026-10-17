@@ -4,10 +4,14 @@ import com.joaovictorcostadev.pequi_short.dto.url.UrlAccessDTO
 import com.joaovictorcostadev.pequi_short.entity.Url
 import com.joaovictorcostadev.pequi_short.entity.UrlAccess
 import com.joaovictorcostadev.pequi_short.entity.User
+import com.joaovictorcostadev.pequi_short.exception.ForbiddenException
+import com.joaovictorcostadev.pequi_short.exception.NotFoundException
 import com.joaovictorcostadev.pequi_short.repository.UrlAccessRepository
 import com.joaovictorcostadev.pequi_short.repository.UrlRepository
 import com.joaovictorcostadev.pequi_short.repository.UserRepository
+import com.joaovictorcostadev.pequi_short.security.UserAuthenticated
 import org.springframework.data.repository.findByIdOrNull
+import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
 import java.time.Instant
 
@@ -16,8 +20,10 @@ import java.time.Instant
 class UrlAccessService (
     val repository: UrlAccessRepository,
     val userRepository: UserRepository,
-    val urlRepository: UrlRepository
-) {
+    val urlRepository: UrlRepository,
+    val userAuthenticated: UserAuthenticated,
+
+    ) {
 
     fun save(urlAccess: UrlAccessDTO) {
 
@@ -40,5 +46,36 @@ class UrlAccessService (
             )
         )
 
+    }
+
+
+    fun getAccessByUrlId(id: Long): List<UrlAccessDTO> {
+        val url: Url = urlRepository.findByIdOrNull(id) ?: throw NotFoundException("Url not found!")
+        val loggedUser = userRepository.findByEmail(userAuthenticated.getUsernameLogged())
+
+
+        if(loggedUser?.id != url.user.id) {
+            throw ForbiddenException("User can view only yours urls access.")
+        }
+
+        val data: List<UrlAccess> = repository.getByUrlId(id)
+
+        val urlsAccess: List<UrlAccessDTO> = data.map{
+            UrlAccessDTO(
+                id = it.id,
+                userId = it.user.id!!,
+                ip = it.ip,
+                country = it.country,
+                state = it.state,
+                city = it.city,
+                deviceType = it.deviceType,
+                operatingSystem = it.deviceType,
+                browser = it.browser,
+                userAgent = it.userAgent,
+                urlId = url.id!!,
+                updatedAt = it.updatedAt!!
+            )
+        }
+        return urlsAccess
     }
 }

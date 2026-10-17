@@ -1,8 +1,10 @@
-package com.joaovictorcostadev.pequi_short.controller
+package com.joaovictorcostadev.pequi_short.controller.user
 
 import com.joaovictorcostadev.pequi_short.dto.response.ResponseDto
+import com.joaovictorcostadev.pequi_short.dto.url.UrlAccessDTO
 import com.joaovictorcostadev.pequi_short.dto.url.UrlDtoRequest
 import com.joaovictorcostadev.pequi_short.dto.url.UrlDtoResponse
+import com.joaovictorcostadev.pequi_short.service.UrlAccessService
 import com.joaovictorcostadev.pequi_short.service.UrlService
 import com.joaovictorcostadev.pequi_short.util.getBrowser
 import com.joaovictorcostadev.pequi_short.util.getClientIp
@@ -21,7 +23,7 @@ import org.springframework.web.bind.annotation.RestController
 import java.net.URI
 
 @RestController
-class UrlController(val urlService: UrlService) {
+class UrlController(val urlService: UrlService, val urlAccessService: UrlAccessService) {
 
     @PostMapping("/api/url/save")
     @PreAuthorize("hasAuthority('URL_CREATE')")
@@ -47,7 +49,7 @@ class UrlController(val urlService: UrlService) {
     @PreAuthorize("hasAuthority('URL_GET')")
     fun getUrls(): ResponseEntity<ResponseDto<List<UrlDtoResponse>>> {
         val data = urlService.get()
-        return ResponseEntity.ok(ResponseDto(code = HttpStatus.OK.value(), data = data, message = "Urls found!"))
+        return ResponseEntity.ok(ResponseDto(code = HttpStatus.CREATED.value(), data = data, message = "Urls found!"))
     }
 
     @DeleteMapping("/api/url/delete/{id}")
@@ -55,6 +57,14 @@ class UrlController(val urlService: UrlService) {
     fun delete(@PathVariable id: Long): ResponseEntity<ResponseDto<UrlDtoResponse>> {
         val data = urlService.delete(id)
         return ResponseEntity.ok(ResponseDto(code = HttpStatus.OK.value(), data = data, message = "Url deleted!"))
+    }
+
+
+    @GetMapping("api/url/{id}/access")
+    @PreAuthorize("hasAuthority('URL_GET_ACCESS')")
+    fun getUrlAccess(@PathVariable id: Long): ResponseEntity<ResponseDto<List<UrlAccessDTO>>> {
+        val data: List<UrlAccessDTO> = urlAccessService.getAccessByUrlId(id)
+            return ResponseEntity.ok(ResponseDto(code = HttpStatus.OK.value(), data = data, message = "Url access retrieved!"))
     }
 
 }
