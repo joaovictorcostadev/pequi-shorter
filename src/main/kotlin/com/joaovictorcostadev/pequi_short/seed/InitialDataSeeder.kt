@@ -34,7 +34,7 @@ class InitialDataSeeder(
         val groupUser = findOrCreateGroup("USER")
 
         val ruleNames = listOf(
-            "URL_GET", "URL_CREATE", "URL_UPDATE", "URL_DELETE",
+            "URL_GET", "URL_CREATE", "URL_UPDATE", "URL_DELETE","URL_GET_ACCESS",
             "USER_GET", "USER_UPDATE", "USER_DELETE", "USER_CREATE",
             "ADMIN_USER_GET", "ADMIN_USER_UPDATE", "ADMIN_USER_DELETE", "ADMIN_USER_CREATE",
             "GROUP_GET", "GROUP_GET_ALL", "GROUP_CREATE", "GROUP_UPDATE", "GROUP_DELETE",
@@ -44,7 +44,7 @@ class InitialDataSeeder(
         val rules = ruleNames.map { findOrCreateRule(it) }
 
         val userRuleNames = setOf(
-            "URL_GET", "URL_CREATE", "URL_UPDATE",
+            "URL_GET", "URL_CREATE", "URL_UPDATE", "URL_GET_ACCESS",
             "USER_GET", "USER_UPDATE", "USER_DELETE",
         )
 
