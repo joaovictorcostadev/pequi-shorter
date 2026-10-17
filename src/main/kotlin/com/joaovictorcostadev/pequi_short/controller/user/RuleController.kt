@@ -1,4 +1,4 @@
-package com.joaovictorcostadev.pequi_short.controller
+package com.joaovictorcostadev.pequi_short.controller.user
 
 import com.joaovictorcostadev.pequi_short.dto.response.ResponseDto
 import com.joaovictorcostadev.pequi_short.dto.rule.RuleRequestDto
