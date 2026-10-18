@@ -11,10 +11,8 @@ data class UrlDtoRequest(
     @JsonProperty("external_url")
     var externalUrl: String,
 
-    @NotNull(message = "user_id is required!")
     @JsonProperty("user_id")
-    var userId: Long,
-
+    var userId: Long? = null,
 )
 
 data class UrlDtoResponse(

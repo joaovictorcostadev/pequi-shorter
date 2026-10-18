@@ -6,6 +6,7 @@ import com.joaovictorcostadev.pequi_short.dto.url.UrlAccessDTO
 import com.joaovictorcostadev.pequi_short.dto.url.UrlDtoRequest
 import com.joaovictorcostadev.pequi_short.dto.url.UrlDtoResponse
 import com.joaovictorcostadev.pequi_short.entity.Url
+import com.joaovictorcostadev.pequi_short.entity.User
 import com.joaovictorcostadev.pequi_short.enum.GroupEnum
 import com.joaovictorcostadev.pequi_short.exception.BadRequestException
 import com.joaovictorcostadev.pequi_short.exception.ForbiddenException
@@ -32,10 +33,15 @@ class UrlService(
 ) {
 
     fun save(urlDtoRequest: UrlDtoRequest): UrlDtoResponse {
-        val user = userRepository.findByIdOrNull(urlDtoRequest.userId)
-            ?: throw NotFoundException("User not found!")
 
         val loggedUser = userRepository.findByEmail(userAuthenticated.getUsernameLogged())
+
+        if(loggedUser == null) {
+            throw NotFoundException("User not found!")
+        }
+
+        val user: User = userRepository.findByIdOrNull(loggedUser.id!!)
+            ?: throw NotFoundException("User not found!")
 
         if (loggedUser?.id != user.id!! && loggedUser?.group?.id != GroupEnum.ADMIN.id) {
             throw ForbiddenException()

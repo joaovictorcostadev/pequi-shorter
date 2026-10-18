@@ -22,28 +22,41 @@ class JwtAuthenticationFilter(
         response: HttpServletResponse,
         filterChain: FilterChain
     ) {
+        var jwt: String? = null
         val authHeader = request.getHeader("Authorization")
 
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            jwt = authHeader.substring(7)
+        } else {
+            val tokenCookie = request.cookies?.firstOrNull { it.name == "access_token" }
+            if (tokenCookie != null && tokenCookie.value.isNotBlank()) {
+                jwt = tokenCookie.value
+            }
+        }
+
+        if (jwt.isNullOrBlank()) {
             filterChain.doFilter(request, response)
             return
         }
 
-        val jwt = authHeader.substring(7)
-        val userEmail = tokenService.extractUsername(jwt)
+        try {
+            val userEmail = tokenService.extractUsername(jwt)
 
-        if (SecurityContextHolder.getContext().authentication == null) {
-            val userDetails = userDetailsService.loadUserByUsername(userEmail)
+            if (SecurityContextHolder.getContext().authentication == null) {
+                val userDetails = userDetailsService.loadUserByUsername(userEmail)
 
-            if (tokenService.isTokenValid(jwt, userDetails)) {
-                val authToken = UsernamePasswordAuthenticationToken(
-                    userDetails, null, userDetails.authorities
-                )
-                authToken.details = WebAuthenticationDetailsSource().buildDetails(request)
+                if (tokenService.isTokenValid(jwt, userDetails)) {
+                    val authToken = UsernamePasswordAuthenticationToken(
+                        userDetails, null, userDetails.authorities
+                    )
+                    authToken.details = WebAuthenticationDetailsSource().buildDetails(request)
 
-                // Define o usuário como autenticado no Spring Security
-                SecurityContextHolder.getContext().authentication = authToken
+                    // Define o usuário como autenticado no Spring Security
+                    SecurityContextHolder.getContext().authentication = authToken
+                }
             }
+        } catch (e: Exception) {
+            // Se o token for inválido/expirado, continua sem autenticar
         }
 
         filterChain.doFilter(request, response)
