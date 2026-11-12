@@ -32,7 +32,7 @@ class UrlController(val urlService: UrlService, val urlAccessService: UrlAccessS
         return ResponseEntity.ok(ResponseDto(code = HttpStatus.OK.value(), data = data, message = "Url created!"))
     }
 
-    @GetMapping("/r/{name}")
+    @GetMapping("/api/r/{name}", "/r/{name}")
     fun redirectUrl(@PathVariable name: String, request: HttpServletRequest): ResponseEntity<Any> {
         val externalUrl = urlService.redirect(
             name = name,

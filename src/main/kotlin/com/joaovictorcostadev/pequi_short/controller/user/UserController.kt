@@ -121,6 +121,7 @@ class UserController(
 
     private fun createSecureCookie(key: String, value: String, maxAge: Long): ResponseCookie {
         return ResponseCookie.from(key, value)
+            .sameSite("None")
             .secure(true)
             .httpOnly(true)
             .path("/")

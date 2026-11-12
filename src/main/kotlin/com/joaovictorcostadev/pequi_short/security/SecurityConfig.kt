@@ -30,12 +30,12 @@ class SecurityConfig (
     @Bean
     fun securityFilterChain(http: HttpSecurity): SecurityFilterChain {
         return http
-            .cors {}
+            .cors { it.configurationSource(corsConfigurationSource()) }
             .csrf { it.disable() }
             .authorizeHttpRequests {
                 it.requestMatchers("/api/user/auth/**").permitAll()
                 it.requestMatchers("/api/admin/user/auth/**").permitAll()
-                it.requestMatchers("/r/*").permitAll()
+                it.requestMatchers("/api/r/**", "/r/**").permitAll()
                 it.requestMatchers(
                     "/v3/api-docs/**",
                     "/swagger-ui/**",
@@ -57,9 +57,7 @@ class SecurityConfig (
     fun corsConfigurationSource(): CorsConfigurationSource {
         val configuration = CorsConfiguration()
 
-        configuration.allowedOrigins = listOf(
-            "http://localhost:4200"
-        )
+        configuration.allowedOriginPatterns = listOf("http://localhost:4200", "https://pequi-shorten.duckdns.org/")
 
         configuration.allowedMethods = listOf(
             "GET",
@@ -71,6 +69,7 @@ class SecurityConfig (
         )
 
         configuration.allowedHeaders = listOf("*")
+        configuration.exposedHeaders = listOf("*")
 
         configuration.allowCredentials = true
 

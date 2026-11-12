@@ -33,4 +33,4 @@ jwt:
   refresh_expiration: ${APP_REFRESH_TOKEN_EXPIRATION}
 
 host:
-  name: http://localhost:8080
+  name: https://pequi-shorten.duckdns.org/

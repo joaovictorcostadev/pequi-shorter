@@ -67,7 +67,7 @@ class UrlService(
             name = savedUrl.name,
             userId = user.id!!,
             externalUrl = savedUrl.externalUrl,
-            url = "${hostName}/r/${savedUrl.name}"
+            url = buildRedirectUrl(savedUrl.name)
         )
     }
 
@@ -82,9 +82,14 @@ class UrlService(
                     externalUrl = it.externalUrl,
                     userId = it.user.id!!,
                     id = it.id!!,
-                    url = "${hostName}/r/${it.name}"
+                    url = buildRedirectUrl(it.name)
                 )
             }
+    }
+
+    private fun buildRedirectUrl(name: String): String {
+        val base = hostName.trimEnd('/')
+        return "$base/api/r/$name"
     }
 
     /**
