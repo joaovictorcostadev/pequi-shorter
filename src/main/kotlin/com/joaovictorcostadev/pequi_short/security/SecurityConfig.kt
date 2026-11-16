@@ -2,6 +2,7 @@ package com.joaovictorcostadev.pequi_short.security
 
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.http.HttpMethod
 import org.springframework.security.authentication.AuthenticationManager
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity
@@ -36,6 +37,7 @@ class SecurityConfig (
                 it.requestMatchers("/api/user/auth/**").permitAll()
                 it.requestMatchers("/api/admin/user/auth/**").permitAll()
                 it.requestMatchers("/api/r/**", "/r/**").permitAll()
+                it.requestMatchers(HttpMethod.POST, "/api/url/save").permitAll()
                 it.requestMatchers(
                     "/v3/api-docs/**",
                     "/swagger-ui/**",

@@ -33,5 +33,5 @@ data class Url(
 
     @ManyToOne
     @JoinColumn(name = "user_id")
-    var user:User
+    var user: User? = null
 )

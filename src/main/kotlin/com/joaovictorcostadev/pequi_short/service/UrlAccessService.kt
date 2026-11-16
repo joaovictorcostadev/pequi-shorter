@@ -27,7 +27,7 @@ class UrlAccessService (
 
     fun save(urlAccess: UrlAccessDTO) {
 
-        val user: User = userRepository.findByIdOrNull(urlAccess.userId) ?: return
+        val user: User? = urlAccess.userId?.let { userRepository.findByIdOrNull(it) }
         val url: Url = urlRepository.findByIdOrNull(urlAccess.urlId) ?: return
 
         repository.save(
@@ -54,7 +54,7 @@ class UrlAccessService (
         val loggedUser = userRepository.findByEmail(userAuthenticated.getUsernameLogged())
 
 
-        if(loggedUser?.id != url.user.id) {
+        if(loggedUser == null || loggedUser.id != url.user?.id) {
             throw ForbiddenException("User can view only yours urls access.")
         }
 
@@ -63,7 +63,7 @@ class UrlAccessService (
         val urlsAccess: List<UrlAccessDTO> = data.map{
             UrlAccessDTO(
                 id = it.id,
-                userId = it.user.id!!,
+                userId = it.user?.id,
                 ip = it.ip,
                 country = it.country,
                 state = it.state,

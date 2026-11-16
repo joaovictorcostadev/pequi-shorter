@@ -9,9 +9,8 @@ import java.time.Instant
 data class UrlAccessDTO(
     var id: Long? = null,
 
-    @NotBlank(message = "user_id is required!")
     @JsonProperty("user_id")
-    val userId: Long,
+    val userId: Long?,
 
     @NotBlank(message = "ip is required!")
     val ip: String,

@@ -21,6 +21,6 @@ data class UrlDtoResponse(
     @JsonProperty("external_url")
     val externalUrl: String,
     @JsonProperty("user_id")
-    val userId: Long,
+    val userId: Long?,
     val url: String,
 )

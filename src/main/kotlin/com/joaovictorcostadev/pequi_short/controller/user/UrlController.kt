@@ -26,7 +26,6 @@ import java.net.URI
 class UrlController(val urlService: UrlService, val urlAccessService: UrlAccessService) {
 
     @PostMapping("/api/url/save")
-    @PreAuthorize("hasAuthority('URL_CREATE')")
     fun saveUrl(@RequestBody urlBody: UrlDtoRequest): ResponseEntity<ResponseDto<UrlDtoResponse>> {
         val data = urlService.save(urlBody)
         return ResponseEntity.ok(ResponseDto(code = HttpStatus.OK.value(), data = data, message = "Url created!"))

@@ -1,5 +1,6 @@
 package com.joaovictorcostadev.pequi_short.security
 
+import org.springframework.security.authentication.AnonymousAuthenticationToken
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.stereotype.Component
@@ -21,6 +22,15 @@ class UserAuthenticated {
         }
 
         throw IllegalStateException("Not user Logged")
+    }
+
+    fun getUsernameLoggedOrNull(): String? {
+        val authentication = SecurityContextHolder.getContext().authentication
+        if (authentication == null || !authentication.isAuthenticated || authentication is AnonymousAuthenticationToken) {
+            return null
+        }
+        val principal = authentication.principal
+        return if (principal is UserDetails) principal.username else principal.toString()
     }
 
 }

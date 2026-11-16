@@ -34,18 +34,10 @@ class UrlService(
 
     fun save(urlDtoRequest: UrlDtoRequest): UrlDtoResponse {
 
-        val loggedUser = userRepository.findByEmail(userAuthenticated.getUsernameLogged())
-
-        if(loggedUser == null) {
-            throw NotFoundException("User not found!")
-        }
-
-        val user: User = userRepository.findByIdOrNull(loggedUser.id!!)
-            ?: throw NotFoundException("User not found!")
-
-        if (loggedUser?.id != user.id!! && loggedUser?.group?.id != GroupEnum.ADMIN.id) {
-            throw ForbiddenException()
-        }
+        // Login é opcional: se houver usuário autenticado, a URL fica vinculada a ele;
+        // caso contrário, é criada como anônima (user = null).
+        val user: User? = userAuthenticated.getUsernameLoggedOrNull()
+            ?.let { userRepository.findByEmail(it) }
 
         urlDtoRequest.name = urlDtoRequest.name ?: uniqueCodeGenerator.getUniqueCode(8)
 
@@ -65,7 +57,7 @@ class UrlService(
         return UrlDtoResponse(
             id = savedUrl.id!!,
             name = savedUrl.name,
-            userId = user.id!!,
+            userId = user?.id,
             externalUrl = savedUrl.externalUrl,
             url = buildRedirectUrl(savedUrl.name)
         )
@@ -80,7 +72,7 @@ class UrlService(
                 UrlDtoResponse(
                     name = it.name,
                     externalUrl = it.externalUrl,
-                    userId = it.user.id!!,
+                    userId = it.user?.id,
                     id = it.id!!,
                     url = buildRedirectUrl(it.name)
                 )
@@ -104,7 +96,7 @@ class UrlService(
         val geoIp: GeoIpDto = geoIpService.getLocation(ip)
 
         urlAccessService.save(UrlAccessDTO(
-            userId = url.user.id!!,
+            userId = url.user?.id,
             urlId = url.id!!,
             ip = ip,
             state = geoIp.stateName,
@@ -124,13 +116,11 @@ class UrlService(
         val url = repository.findByIdOrNull(id)
             ?: throw NotFoundException("Url not found!")
 
-        val user = userRepository.findByIdOrNull(url.user.id!!)
-            ?: throw NotFoundException("User not found!")
-
         val loggedUser = userRepository.findByEmail(userAuthenticated.getUsernameLogged())
             ?: throw NotFoundException("User not found!")
 
-        if (loggedUser.id != user.id!! && loggedUser.group.id != GroupEnum.ADMIN.id) {
+        // URLs anônimas (sem dono) só podem ser apagadas por admin
+        if (loggedUser.id != url.user?.id && loggedUser.group.id != GroupEnum.ADMIN.id) {
             throw ForbiddenException()
         }
 
@@ -140,7 +130,7 @@ class UrlService(
             name = url.name,
             externalUrl = url.externalUrl,
             id = url.id!!,
-            userId = url.user.id!!,
+            userId = url.user?.id,
             url = "${hostName}/r/${url.name}"
         )
     }
