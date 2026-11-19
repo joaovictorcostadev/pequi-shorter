@@ -43,6 +43,10 @@ dependencies {
 	implementation("org.flywaydb:flyway-core")
 	implementation("org.flywaydb:flyway-database-postgresql")
 
+	//bucket4j
+	implementation("com.bucket4j:bucket4j-core:8.10.1")
+
+
 	// Swagger
 	implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.13")
 }
