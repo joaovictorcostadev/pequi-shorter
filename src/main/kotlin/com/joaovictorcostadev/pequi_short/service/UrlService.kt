@@ -42,8 +42,13 @@ class UrlService(
         urlDtoRequest.name = urlDtoRequest.name ?: uniqueCodeGenerator.getUniqueCode(8)
 
         val urlExist = repository.findByName(urlDtoRequest.name!!)
+
         if (urlExist != null) {
             throw BadRequestException("Url existed!")
+        }
+
+        if(urlDtoRequest.externalUrl.contains("https://pequi-shorten.duckdns.org")) {
+            throw BadRequestException("URL shortening is not available for the pequi-shorten domain. Steps...")
         }
 
         val savedUrl = repository.save(Url(
